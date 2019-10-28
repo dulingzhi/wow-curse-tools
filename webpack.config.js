@@ -8,17 +8,18 @@ const path = require("path");
 const config = {
     target: "node",
 
-    entry: "./src/index.ts",
+    entry: {
+        index: "./src/index.ts",
+        package: "./src/package.ts",
+        init: "./src/init.ts"
+    },
     output: {
         path: path.resolve(__dirname, "dist"),
-        filename: "index.js",
+        filename: "[name].js",
         libraryTarget: "commonjs2",
         devtoolModuleFilenameTemplate: "../[resource-path]"
     },
-    devtool: "source-map",
-    externals: {
-        vscode: "commonjs vscode"
-    },
+    // devtool: "source-map",
     resolve: {
         extensions: [".ts", ".js"]
     },

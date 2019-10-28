@@ -7,22 +7,22 @@
 
 import * as process from 'process';
 import * as program from 'commander';
-import { Init } from './init';
 
 function main() {
-    program
-        .command('init')
-        .description('init wow curse project')
-        .action(() => {
-            new Init().run();
-        });
+    const commands = {
+        package: 'Package your addon',
+        init: 'Init wow curse project'
+    };
 
-    program
-        .command('package')
-        .description('package')
-        .action(() => {
-            console.log('package');
-        });
+    for (const [key, desc] of Object.entries(commands)) {
+        program
+            .command(key)
+            .description(desc)
+            .action(async () => {
+                (await import('./' + key)).default.run();
+            });
+    }
+
     program.parse(process.argv);
 }
 

@@ -6,10 +6,11 @@
     "wct": "./bin/wct"
   },
   "scripts": {
-    "build": "tsc -p .",
+    "build": "webpack --mode production",
+    "compile": "webpack --mode development",
+    "watch": "webpack --mode development --watch --info-verbosity verbose",
     "prestart": "npm run build",
-    "start": "node dist/index.js init",
-    "postinstall": "npm install && npm run build"
+    "start": "node dist/index.js init"
   },
   "author": "Dencer",
   "license": "MIT",
@@ -22,7 +23,10 @@
     "@types/fs-extra": "^8.0.1",
     "@types/inquirer": "^6.5.0",
     "@types/node": "^12.11.7",
+    "ts-loader": "^6.2.1",
     "tslint": "^5.20.0",
-    "typescript": "^3.6.4"
+    "typescript": "^3.6.4",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.9"
   }
 }

@@ -9,7 +9,7 @@
     "build": "tsc -p .",
     "prestart": "npm run build",
     "start": "node dist/index.js init",
-    "postinstall": "npm run build"
+    "postinstall": "npm install && npm run build"
   },
   "author": "Dencer",
   "license": "MIT",

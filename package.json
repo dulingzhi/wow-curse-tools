@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "bin": {
-    "wct": "./dist/index"
+    "wct": "./bin/wct"
   },
   "scripts": {
     "build": "tsc -p .",

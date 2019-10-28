@@ -1,0 +1,26 @@
+{
+  "name": "wow-curse-tools",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "bin": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "prestart": "npm run build",
+    "start": "node dist/index.js init"
+  },
+  "author": "Dencer",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^3.0.2",
+    "fs-extra": "^8.1.0",
+    "inquirer": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^8.0.1",
+    "@types/inquirer": "^6.5.0",
+    "@types/node": "^12.11.7",
+    "tslint": "^5.20.0",
+    "typescript": "^3.6.4"
+  }
+}

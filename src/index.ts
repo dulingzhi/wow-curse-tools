@@ -21,12 +21,13 @@ function main() {
             await gProject.init();
 
             const addon = new Addon();
-            addon.outputStream
-                .pipe(fs.createWriteStream(`${gProject.name}-${gProject.version}.zip`))
-                .on('close', () => console.log('Package done.'));
 
             console.log('Creating package...');
             await addon.flush();
+
+            addon.outputStream
+                .pipe(fs.createWriteStream(`${gProject.name}-${gProject.version}.zip`))
+                .on('close', () => console.log('Package done.'));
         });
 
     program
@@ -51,9 +52,11 @@ function main() {
                 }
             }
 
-            cli.uploadFile(addon.outputStream, gProject.version);
+            await addon.flush();
 
-            addon.flush();
+            await cli.uploadFile(addon.outputStream, gProject.version);
+
+            console.log('Publish done');
         });
 
     program.parse(process.argv);

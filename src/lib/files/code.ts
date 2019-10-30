@@ -13,6 +13,10 @@ import { DOMParser } from 'xmldom';
 export class CodeFilesFinder {
     private _files = new Set<string>();
 
+    private parseFileName(name: string) {
+        return name.replace(/\\+/g, '/');
+    }
+
     private async parseToc(file: string) {
         const content = await fs.readFile(file, { encoding: 'utf-8' });
         const folder = path.dirname(path.resolve(file));
@@ -20,7 +24,7 @@ export class CodeFilesFinder {
         for (let line of content.split(/[\r\n]+/)) {
             line = line.trim();
             if (line !== '' && !line.startsWith('#')) {
-                await this.parseFile(path.resolve(folder, line));
+                await this.parseFile(path.resolve(folder, this.parseFileName(line)));
             }
         }
     }
@@ -34,7 +38,7 @@ export class CodeFilesFinder {
                 if (element) {
                     const f = element.getAttribute('file');
                     if (f) {
-                        await this.parseFile(path.resolve(folder, f));
+                        await this.parseFile(path.resolve(folder, this.parseFileName(f)));
                     }
                 }
             }

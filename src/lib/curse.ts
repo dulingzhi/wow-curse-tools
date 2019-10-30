@@ -5,6 +5,7 @@
  * @Date   : 10/29/2019, 5:50:08 PM
  */
 
+import * as fs from 'fs-extra';
 import * as FormData from 'form-data';
 import { post } from 'got';
 
@@ -13,7 +14,7 @@ export class Curse {
 
     constructor(private curseId: number, private token: string) {}
 
-    async uploadFile(stream: NodeJS.ReadableStream, version: string) {
+    async uploadFile(file: string, version: string) {
         const url = `${this.base}/projects/${this.curseId}/upload-file`;
         const form = new FormData();
 
@@ -26,7 +27,7 @@ export class Curse {
                 displayName: version
             })
         );
-        form.append('file', stream);
+        form.append('file', fs.createReadStream(file));
 
         const resp = await post(url, {
             body: form,

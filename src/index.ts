@@ -48,13 +48,18 @@ function main() {
                 const locale = await readLocale(l.file);
 
                 if (locale) {
-                    cli.importLocale(l.lang, locale);
+                    await cli.importLocale(l.lang, locale);
                 }
             }
 
-            await addon.flush();
+            const file = `${gProject.name}-${gProject.version}.zip`;
 
-            await cli.uploadFile(addon.outputStream, gProject.version);
+            await addon.flush();
+            await new Promise(resolve => {
+                addon.outputStream.pipe(fs.createWriteStream(file)).on('close', () => resolve());
+            });
+            await cli.uploadFile(file, gProject.version);
+            await fs.unlink(file);
 
             console.log('Publish done');
         });

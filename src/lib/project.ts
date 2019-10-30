@@ -5,7 +5,6 @@
  * @Date   : 10/28/2019, 5:28:51 PM
  */
 
-import * as process from 'process';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 

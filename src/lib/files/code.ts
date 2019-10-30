@@ -1,8 +1,8 @@
 /**
- * @File   : files.ts
+ * @File   : code.ts
  * @Author : Dencer (tdaddon@163.com)
  * @Link   : https://dengsir.github.io
- * @Date   : 10/28/2019, 2:09:40 PM
+ * @Date   : 10/29/2019, 3:20:08 PM
  */
 
 import * as path from 'path';
@@ -10,15 +10,10 @@ import * as fs from 'fs-extra';
 
 import { DOMParser } from 'xmldom';
 
-export class FilesReader {
-    private file: string;
-    private files = new Set<string>();
+export class CodeFilesFinder {
+    private _files = new Set<string>();
 
-    constructor(file: string) {
-        this.file = file;
-    }
-
-    async parseToc(file: string) {
+    private async parseToc(file: string) {
         const content = await fs.readFile(file, { encoding: 'utf-8' });
         const folder = path.dirname(path.resolve(file));
 
@@ -30,7 +25,7 @@ export class FilesReader {
         }
     }
 
-    async parseXml(file: string) {
+    private async parseXml(file: string) {
         const folder = path.dirname(path.resolve(file));
 
         const parseNodes = async (nodes: HTMLCollectionOf<Element>) => {
@@ -62,8 +57,8 @@ export class FilesReader {
         await parseNodes(root.getElementsByTagName('Script'));
     }
 
-    async parseFile(file: string) {
-        this.files.add(path.resolve(file));
+    private async parseFile(file: string) {
+        this._files.add(path.resolve(file));
 
         const ext = path.extname(file).toLowerCase();
 
@@ -81,12 +76,8 @@ export class FilesReader {
         }
     }
 
-    async run() {
-        await this.parseFile(this.file);
-    }
-
-    async getFiles() {
-        await this.run();
-        return this.files;
+    async findFiles(file: string) {
+        await this.parseFile(path.resolve(file));
+        return this._files;
     }
 }

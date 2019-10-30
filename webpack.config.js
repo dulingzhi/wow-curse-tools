@@ -10,8 +10,6 @@ const config = {
 
     entry: {
         index: "./src/index.ts",
-        package: "./src/package.ts",
-        init: "./src/init.ts"
     },
     output: {
         path: path.resolve(__dirname, "dist"),

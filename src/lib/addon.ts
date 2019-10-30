@@ -2,28 +2,36 @@
  * @File   : addon.ts
  * @Author : Dencer (tdaddon@163.com)
  * @Link   : https://dengsir.github.io
- * @Date   : 10/28/2019, 5:35:28 PM
+ * @Date   : 10/29/2019, 3:45:40 PM
  */
 
-import * as path from 'path';
-import { FilesReader } from './files';
-import { Resources } from './resources';
+import { ZipFile } from 'yazl';
+import { findFiles } from './files';
+
+import { gProject } from './project';
+import { compileFile } from './compiler';
 
 export class Addon {
-    name: string;
-    folder: string;
-    private ignores: string[];
+    private zipFile = new ZipFile();
 
-    constructor(name: string, folder: string, ignores: string[] = []) {
-        this.name = name;
-        this.folder = folder;
-        this.ignores = ignores;
+    get outputStream() {
+        return this.zipFile.outputStream;
     }
 
-    async getFiles() {
-        const filesReader = new FilesReader(path.resolve(this.folder, this.name + '.toc'));
-        const resourceReader = new Resources(this.folder, this.ignores);
+    async flush() {
+        for (const addon of gProject.addons) {
+            const files = await findFiles(addon.folder, addon.name);
 
-        return [...(await filesReader.getFiles()), ...(await resourceReader.getFiles())];
+            for (const file of files) {
+                const content = await compileFile(file.file);
+                if (content) {
+                    this.zipFile.addBuffer(Buffer.from(content, 'utf-8'), file.relative);
+                } else {
+                    this.zipFile.addFile(file.file, file.relative);
+                }
+            }
+        }
+
+        this.zipFile.end();
     }
 }

@@ -9,18 +9,32 @@ import * as process from 'process';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 
-export class Project {
+interface Addon {
+    name: string;
+    folder: string;
+}
+
+interface Localization {
+    lang: string;
+    file: string;
+}
+
+class Project implements Addon {
     private _name: string;
     private _version: string;
     private _curseId: number;
-    private _otherAddons = new Map<string, string>();
-    private _localizations = new Map<string, string>();
-    private _token = process.env.CURSE_TOKEN;
+    private _folder: string;
+    private _addons: Addon[] = [];
+    private _localizations: Localization[] = [];
 
     constructor() {}
 
     get name() {
         return this._name;
+    }
+
+    get folder() {
+        return this._folder;
     }
 
     get version() {
@@ -31,16 +45,12 @@ export class Project {
         return this._curseId;
     }
 
-    get otherAddons() {
-        return this._otherAddons;
+    get addons() {
+        return this._addons;
     }
 
     get localizations() {
         return this._localizations;
-    }
-
-    get token() {
-        return this._token;
     }
 
     async init() {
@@ -50,20 +60,31 @@ export class Project {
             throw Error('not a wow curse project');
         }
 
+        this._folder = path.resolve('./');
         this._name = pkg.wow.name as string;
         this._version = pkg.version as string;
         this._curseId = pkg.wow.curse_id as number;
 
+        this._addons.push(this);
+
         if (pkg.wow.addons) {
-            for (const [key, p] of Object.entries(pkg.wow.addons)) {
-                this.otherAddons.set(key, path.resolve(p as string));
+            for (const [key, v] of Object.entries(pkg.wow.addons)) {
+                this._addons.push({
+                    name: key,
+                    folder: v as string
+                });
             }
         }
 
         if (pkg.wow.localizations) {
-            for (const [key, p] of Object.entries(pkg.wow.localizations)) {
-                this._localizations.set(key, path.resolve(p as string));
+            for (const [key, v] of Object.entries(pkg.wow.localizations)) {
+                this._localizations.push({
+                    lang: key,
+                    file: v as string
+                });
             }
         }
     }
 }
+
+export const gProject = new Project();

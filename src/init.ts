@@ -9,7 +9,7 @@ import * as path from 'path';
 import * as inquirer from 'inquirer';
 import * as fs from 'fs-extra';
 
-class Init {
+export class Init {
     constructor() {}
 
     async run() {
@@ -34,5 +34,3 @@ class Init {
         });
     }
 }
-
-export default new Init();

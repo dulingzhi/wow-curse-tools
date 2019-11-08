@@ -12,8 +12,17 @@ import { gProject } from './lib/project';
 import { Addon } from './lib/addon';
 import { Curse } from './lib/curse';
 import { readLocale } from './lib/locale';
+import { Init } from './init';
 
 function main() {
+    program
+        .command('init')
+        .description('Init your addon project.')
+        .action(async () => {
+            const initer = new Init();
+            await initer.run();
+        });
+
     program
         .command('package')
         .description('Package your addon.')

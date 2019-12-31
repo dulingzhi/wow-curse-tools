@@ -52,23 +52,28 @@ function main() {
 
             const addon = new Addon();
             const cli = new Curse(gProject.curseId, token);
+            const wowVersionId = await cli.getGameVersionIdByName(gProject.wowVersion);
 
-            for (const l of gProject.localizations) {
-                const locale = await readLocale(l.file);
+            console.log('wow version id:', wowVersionId);
 
-                if (locale) {
-                    await cli.importLocale(l.lang, locale);
+            if (gProject.curseId) {
+                for (const l of gProject.localizations) {
+                    const locale = await readLocale(l.file);
+
+                    if (locale) {
+                        await cli.importLocale(l.lang, locale);
+                    }
                 }
+
+                const file = `${gProject.name}-${gProject.version}.zip`;
+
+                await addon.flush();
+                await new Promise(resolve => {
+                    addon.outputStream.pipe(fs.createWriteStream(file)).on('close', () => resolve());
+                });
+                await cli.uploadFile(file, gProject.version, wowVersionId);
+                await fs.unlink(file);
             }
-
-            const file = `${gProject.name}-${gProject.version}.zip`;
-
-            await addon.flush();
-            await new Promise(resolve => {
-                addon.outputStream.pipe(fs.createWriteStream(file)).on('close', () => resolve());
-            });
-            await cli.uploadFile(file, gProject.version);
-            await fs.unlink(file);
 
             console.log('Publish done');
         });

@@ -23,6 +23,7 @@ class Project implements Addon {
     private _version: string;
     private _curseId: number;
     private _folder: string;
+    private _wowVersion: string;
     private _addons: Addon[] = [];
     private _localizations: Localization[] = [];
 
@@ -44,6 +45,10 @@ class Project implements Addon {
         return this._curseId;
     }
 
+    get wowVersion() {
+        return this._wowVersion;
+    }
+
     get addons() {
         return this._addons;
     }
@@ -57,6 +62,16 @@ class Project implements Addon {
 
         if (!pkg.wow || !pkg.wow.name) {
             throw Error('not a wow curse project');
+        }
+
+        const toc = await fs.readFile(`./${pkg.wow.name}.toc`, { encoding: 'utf-8' });
+        const m = toc.match(/##\s*Interface\s*:\s*(\d+)/);
+        if (m) {
+            const verion = m[1];
+            const mm = verion.match(/^(\d*)(\d\d)(\d\d)$/);
+            if (mm) {
+                this._wowVersion = `${Number.parseInt(mm[1])}.${Number.parseInt(mm[2])}.${Number.parseInt(mm[3])}`;
+            }
         }
 
         this._folder = path.resolve('./');

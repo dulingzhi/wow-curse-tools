@@ -7,14 +7,45 @@
 
 import * as fs from 'fs-extra';
 import * as FormData from 'form-data';
-import { post } from 'got';
+import * as got from 'got';
+
+export interface GameVersion {
+    id: number;
+    name: string;
+    gameVersionTypeID: number;
+    slug: string;
+}
 
 export class Curse {
     private base = 'https://wow.curseforge.com/api';
 
     constructor(private curseId: number, private token: string) {}
 
-    async uploadFile(file: string, version: string) {
+    async gameVersions() {
+        const url = `${this.base}/game/versions`;
+        const resp = await got.get(url, {
+            headers: {
+                'X-Api-Token': this.token,
+                'user-agent': ''
+            }
+        });
+        return JSON.parse(resp.body) as GameVersion[];
+    }
+
+    async getGameVersionIdByName(name: string) {
+        for (const item of await this.gameVersions()) {
+            if (item.name === name) {
+                return item.id;
+            }
+        }
+        return 0;
+    }
+
+    async uploadFile(file: string, version: string, wowVersion: number) {
+        if (!this.curseId) {
+            console.error('error curse id');
+            return;
+        }
         const url = `${this.base}/projects/${this.curseId}/upload-file`;
         const form = new FormData();
 
@@ -22,14 +53,14 @@ export class Curse {
             'metadata',
             JSON.stringify({
                 changelog: '',
-                gameVersions: [7350],
+                gameVersions: [wowVersion],
                 releaseType: 'release',
                 displayName: version
             })
         );
         form.append('file', fs.createReadStream(file));
 
-        const resp = await post(url, {
+        const resp = await got.post(url, {
             body: form,
             headers: {
                 'X-Api-Token': this.token,
@@ -57,7 +88,7 @@ export class Curse {
 
         const url = `${this.base}/projects/${this.curseId}/localization/import`;
 
-        const resp = await post(url, {
+        const resp = await got.post(url, {
             body: form,
             headers: {
                 'X-Api-Token': this.token,

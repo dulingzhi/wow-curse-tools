@@ -9,7 +9,7 @@
     "build": "webpack --mode production",
     "compile": "webpack --mode development",
     "watch": "webpack --mode development --watch --info-verbosity verbose",
-    "start": "npm run build & npm install -g F:\\wow\\wow-curse-tools"
+    "start": "npm run build & npm uni -g wow-curse-tools & npm install -g F:\\wow\\wow-curse-tools"
   },
   "author": "Dencer",
   "license": "MIT",

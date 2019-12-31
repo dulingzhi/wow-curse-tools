@@ -13,7 +13,11 @@ export class ResFilesFinder {
     private exts = new Set(['.blp', '.tga', '.m2']);
 
     private isResource(file: string) {
-        if (/^license\./i.test(path.basename(file))) {
+        const baseName = path.basename(file);
+        if (/^license/i.test(baseName)) {
+            return true;
+        }
+        if (/^bindings\.xml$/i.test(baseName)) {
             return true;
         }
         if (this.exts.has(path.extname(file).toLowerCase())) {
@@ -24,7 +28,7 @@ export class ResFilesFinder {
 
     private async walk(folder: string) {
         const files = (await fs.readdir(folder))
-            .filter(name => !name.startsWith('.'))
+            .filter(name => !name.startsWith('.') && !/^node_modules$/i.test(name))
             .map(name => path.resolve(folder, name));
 
         for (const file of files) {

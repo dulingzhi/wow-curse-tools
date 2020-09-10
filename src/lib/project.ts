@@ -26,6 +26,7 @@ class Project implements Addon {
     private _wowVersion: string;
     private _addons: Addon[] = [];
     private _localizations: Localization[] = [];
+    private _obfuscation: boolean = false;
 
     constructor() {}
 
@@ -57,7 +58,11 @@ class Project implements Addon {
         return this._localizations;
     }
 
-    async init() {
+    get obfuscation() {
+        return this._obfuscation;
+    }
+
+    async init(obfu: boolean) {
         const pkg = await fs.readJson('./package.json');
 
         if (!pkg.wow || !pkg.wow.name) {
@@ -78,6 +83,7 @@ class Project implements Addon {
         this._name = pkg.wow.name as string;
         this._version = pkg.version as string;
         this._curseId = pkg.wow.curse_id as number;
+        this._obfuscation = obfu;
 
         this._addons.push(this);
 
@@ -85,7 +91,7 @@ class Project implements Addon {
             for (const [key, v] of Object.entries(pkg.wow.addons)) {
                 this._addons.push({
                     name: key,
-                    folder: v as string
+                    folder: v as string,
                 });
             }
         }
@@ -94,7 +100,7 @@ class Project implements Addon {
             for (const [key, v] of Object.entries(pkg.wow.localizations)) {
                 this._localizations.push({
                     lang: key,
-                    file: v as string
+                    file: v as string,
                 });
             }
         }

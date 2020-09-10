@@ -25,9 +25,10 @@ function main() {
 
     program
         .command('package')
+        .option('-O --obfuscation', 'Code obfuscation')
         .description('Package your addon.')
-        .action(async () => {
-            await gProject.init();
+        .action(async (cmd) => {
+            await gProject.init(!!cmd.obfuscation);
 
             const addon = new Addon();
 
@@ -41,14 +42,15 @@ function main() {
 
     program
         .command('publish')
+        .option('-O --obfuscation', 'Code obfuscation')
         .option('-T, --token <token>', 'Your curse API token')
         .description('Publish your addon.')
-        .action(async cmd => {
+        .action(async (cmd) => {
             const token: string = cmd.token || process.env.CURSE_TOKEN;
             if (!token) {
                 throw Error('not found token');
             }
-            await gProject.init();
+            await gProject.init(!!cmd.obfuscation);
 
             const addon = new Addon();
             const cli = new Curse(gProject.curseId, token);
@@ -68,7 +70,7 @@ function main() {
                 const file = `${gProject.name}-${gProject.version}.zip`;
 
                 await addon.flush();
-                await new Promise(resolve => {
+                await new Promise((resolve) => {
                     addon.outputStream.pipe(fs.createWriteStream(file)).on('close', () => resolve());
                 });
                 await cli.uploadFile(file, gProject.version, wowVersionId);

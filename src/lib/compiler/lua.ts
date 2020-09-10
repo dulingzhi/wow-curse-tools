@@ -6,13 +6,19 @@
  */
 
 import { Compiler } from './compiler';
+import * as luamin from 'luamin';
+import { gProject } from '../project';
 
 export class LuaCompiler implements Compiler {
     compile(code: string) {
-        return code
+        let c = code
             .replace(/--\s*@debug@/g, '--[===[@debug@')
             .replace(/--\s*@end-debug@/g, '--@end-debug@]===]')
             .replace(/--\[=*\[@non-debug@/g, '--@non-debug@')
             .replace(/--@end-non-debug@\]=*\]/g, '--@end-non-debug@');
+        if (gProject.obfuscation) {
+            c = luamin.minify(c);
+        }
+        return c;
     }
 }

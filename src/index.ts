@@ -13,6 +13,7 @@ import { Addon } from './lib/addon';
 import { Curse } from './lib/curse';
 import { readLocale } from './lib/locale';
 import { Init } from './init';
+import * as cp from 'child_process';
 
 function main() {
     program
@@ -26,6 +27,7 @@ function main() {
     program
         .command('package')
         .option('-O --obfuscation', 'Code obfuscation')
+        .option('-C --count', 'Package file with git count')
         .description('Package your addon.')
         .action(async (cmd) => {
             await gProject.init(!!cmd.obfuscation);
@@ -35,8 +37,21 @@ function main() {
             console.log('Creating package...');
             await addon.flush();
 
+            let count = 0;
+
+            if (!!cmd.count) {
+                const out = cp.execFileSync('git.exe', ['rev-list', 'HEAD', '--count']);
+                count = parseInt(out.toString());
+            }
+
             addon.outputStream
-                .pipe(fs.createWriteStream(`${gProject.name}-${gProject.version}.zip`))
+                .pipe(
+                    fs.createWriteStream(
+                        !!cmd.count
+                            ? `${gProject.name}-${gProject.version}.${count}.zip`
+                            : `${gProject.name}-${gProject.version}.zip`
+                    )
+                )
                 .on('close', () => console.log('Package done.'));
         });
 
@@ -44,6 +59,7 @@ function main() {
         .command('publish')
         .option('-O --obfuscation', 'Code obfuscation')
         .option('-T, --token <token>', 'Your curse API token')
+        .option('-C --count', 'Package file with git count')
         .description('Publish your addon.')
         .action(async (cmd) => {
             const token: string = cmd.token || process.env.CURSE_TOKEN;
@@ -67,7 +83,16 @@ function main() {
                     }
                 }
 
-                const file = `${gProject.name}-${gProject.version}.zip`;
+                let count = 0;
+
+                if (!!cmd.count) {
+                    const out = cp.execFileSync('git.exe', ['rev-list', 'HEAD', '--count']);
+                    count = parseInt(out.toString());
+                }
+
+                const file = !!cmd.count
+                    ? `${gProject.name}-${gProject.version}.${count}.zip`
+                    : `${gProject.name}-${gProject.version}.zip`;
 
                 await addon.flush();
                 await new Promise((resolve) => {

@@ -5,33 +5,42 @@
  * @Date   : 10/29/2019, 3:45:40 PM
  */
 
+import * as fs from 'fs-extra';
+
 import { ZipFile } from 'yazl';
 import { findFiles } from './files';
 
-import { gProject } from './project';
-import { compileFile } from './compiler';
+import { Project } from './project';
+import { gCompilerManager } from './compiler';
 
 export class Addon {
     private zipFile = new ZipFile();
 
-    get outputStream() {
-        return this.zipFile.outputStream;
+    constructor(private project: Project, pid: string) {
+        const env = project.buildEnvs.get(pid);
+        if (!env) {
+            throw Error('not found env');
+        }
+        gCompilerManager.setEnv(env);
     }
 
-    async flush() {
-        for (const addon of gProject.addons) {
-            const files = await findFiles(addon.folder, addon.name);
+    flush(fileName: string) {
+        return new Promise(async (resolve) => {
+            for (const addon of this.project.addons) {
+                const files = await findFiles(addon.folder, addon.name);
 
-            for (const file of files) {
-                const content = await compileFile(file.file);
-                if (content) {
-                    this.zipFile.addBuffer(Buffer.from(content, 'utf-8'), file.relative);
-                } else {
-                    this.zipFile.addFile(file.file, file.relative);
+                for (const file of files) {
+                    const content = await gCompilerManager.compile(file.file);
+                    if (content) {
+                        this.zipFile.addBuffer(Buffer.from(content, 'utf-8'), file.relative);
+                    } else {
+                        this.zipFile.addFile(file.file, file.relative);
+                    }
                 }
             }
-        }
 
-        this.zipFile.end();
+            this.zipFile.end();
+            this.zipFile.outputStream.pipe(fs.createWriteStream(fileName)).on('close', () => resolve(true));
+        });
     }
 }

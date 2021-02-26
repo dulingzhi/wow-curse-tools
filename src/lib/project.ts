@@ -7,6 +7,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs-extra';
+import { CompilerEnv } from './compiler/compiler';
 
 interface Addon {
     name: string;
@@ -18,14 +19,26 @@ interface Localization {
     file: string;
 }
 
-class Project implements Addon {
+interface BuildMap {
+    classic: string;
+    retail: string;
+}
+
+interface WowPackage {
+    name: string;
+    curse_id?: number;
+    builds?: BuildMap;
+    localizations?: any;
+}
+
+export class Project implements Addon {
     private _name: string;
     private _version: string;
     private _curseId: number;
     private _folder: string;
-    private _wowVersion: string;
     private _addons: Addon[] = [];
     private _localizations: Localization[] = [];
+    private _buildEnvs = new Map<string, CompilerEnv>();
 
     constructor() {}
 
@@ -45,16 +58,32 @@ class Project implements Addon {
         return this._curseId;
     }
 
-    get wowVersion() {
-        return this._wowVersion;
-    }
-
     get addons() {
         return this._addons;
     }
 
     get localizations() {
         return this._localizations;
+    }
+
+    get buildEnvs() {
+        return this._buildEnvs;
+    }
+
+    genFileName(pid: string) {
+        if (!pid || pid === 'none') {
+            return `${this.name}-${this.version}.zip`;
+        } else {
+            return `${this.name}-${pid}-${this.version}.zip`;
+        }
+    }
+
+    private parseWowVersion(t: string) {
+        const mm = t.match(/^(\d*)(\d\d)(\d\d)$/);
+        if (mm) {
+            return `${Number.parseInt(mm[1])}.${Number.parseInt(mm[2])}.${Number.parseInt(mm[3])}`;
+        }
+        return '';
     }
 
     async init() {
@@ -64,20 +93,36 @@ class Project implements Addon {
             throw Error('not a wow curse project');
         }
 
-        const toc = await fs.readFile(`./${pkg.wow.name}.toc`, { encoding: 'utf-8' });
-        const m = toc.match(/##\s*Interface\s*:\s*(\d+)/);
-        if (m) {
-            const verion = m[1];
-            const mm = verion.match(/^(\d*)(\d\d)(\d\d)$/);
-            if (mm) {
-                this._wowVersion = `${Number.parseInt(mm[1])}.${Number.parseInt(mm[2])}.${Number.parseInt(mm[3])}`;
+        const p: WowPackage = pkg.wow;
+
+        this._folder = path.resolve('./');
+        this._name = p.name;
+        this._version = pkg.version;
+        this._curseId = p.curse_id || 0;
+
+        if (p.builds) {
+            for (const [pid, build] of Object.entries(p.builds)) {
+                this._buildEnvs.set(pid, {
+                    build,
+                    pid,
+                    version: this._version,
+                    wowVersion: this.parseWowVersion(build),
+                });
             }
         }
 
-        this._folder = path.resolve('./');
-        this._name = pkg.wow.name as string;
-        this._version = pkg.version as string;
-        this._curseId = pkg.wow.curse_id as number;
+        if (this._buildEnvs.size === 0) {
+            const toc = await fs.readFile(`./${pkg.wow.name}.toc`, { encoding: 'utf-8' });
+            const m = toc.match(/##\s*Interface\s*:\s*(\d+)/);
+            if (m) {
+                this._buildEnvs.set('none', {
+                    pid: 'none',
+                    build: m[1],
+                    version: this._version,
+                    wowVersion: this.parseWowVersion(m[1]),
+                });
+            }
+        }
 
         this._addons.push(this);
 
@@ -85,7 +130,7 @@ class Project implements Addon {
             for (const [key, v] of Object.entries(pkg.wow.addons)) {
                 this._addons.push({
                     name: key,
-                    folder: v as string
+                    folder: v as string,
                 });
             }
         }
@@ -94,11 +139,9 @@ class Project implements Addon {
             for (const [key, v] of Object.entries(pkg.wow.localizations)) {
                 this._localizations.push({
                     lang: key,
-                    file: v as string
+                    file: v as string,
                 });
             }
         }
     }
 }
-
-export const gProject = new Project();

@@ -7,7 +7,7 @@
 
 import * as fs from 'fs-extra';
 import * as FormData from 'form-data';
-import * as got from 'got';
+import Got from 'got';
 
 export interface GameVersion {
     id: number;
@@ -23,11 +23,12 @@ export class Curse {
 
     async gameVersions() {
         const url = `${this.base}/game/versions`;
-        const resp = await got.get(url, {
+
+        const resp = await Got.get(url, {
             headers: {
                 'X-Api-Token': this.token,
-                'user-agent': ''
-            }
+                'user-agent': '',
+            },
         });
         return JSON.parse(resp.body) as GameVersion[];
     }
@@ -55,17 +56,17 @@ export class Curse {
                 changelog: '',
                 gameVersions: [wowVersion],
                 releaseType: 'release',
-                displayName: version
+                displayName: version,
             })
         );
         form.append('file', fs.createReadStream(file));
 
-        const resp = await got.post(url, {
+        const resp = await Got.post(url, {
             body: form,
             headers: {
                 'X-Api-Token': this.token,
-                'user-agent': ''
-            }
+                'user-agent': '',
+            },
         });
 
         if (resp.statusCode !== 200 || !resp.body) {
@@ -88,12 +89,12 @@ export class Curse {
 
         const url = `${this.base}/projects/${this.curseId}/localization/import`;
 
-        const resp = await got.post(url, {
+        const resp = await Got.post(url, {
             body: form,
             headers: {
                 'X-Api-Token': this.token,
-                'user-agent': ''
-            }
+                'user-agent': '',
+            },
         });
 
         if (resp.statusCode !== 200 || !resp.body) {

@@ -59,13 +59,7 @@
         "variable-declaration": "nospace"
       }
     ],
-    "trailing-comma": [
-      true,
-      {
-        "multiline": "never",
-        "singleline": "never"
-      }
-    ],
+    "trailing-comma": true,
     "variable-name": [true, "check-format", "allow-leading-underscore", "ban-keywords"],
     "whitespace": [true, "check-branch", "check-decl", "check-operator", "check-separator", "check-type"]
   }

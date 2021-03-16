@@ -58,27 +58,27 @@ function main() {
 
             const cli = new Curse(project.curseId, token);
 
+            for (const l of project.localizations) {
+                const locale = await readLocale(l.file);
+
+                if (locale) {
+                    await cli.importLocale(l.lang, locale);
+                }
+            }
+
             for (const [pid, env] of project.buildEnvs) {
                 const addon = new Addon(project, pid);
                 const wowVersionId = await cli.getGameVersionIdByName(env.wowVersion);
                 console.log('wow version id:', wowVersionId);
 
-                for (const l of project.localizations) {
-                    const locale = await readLocale(l.file);
+                const fileName = project.genFileName(pid);
 
-                    if (locale) {
-                        await cli.importLocale(l.lang, locale);
-                    }
-
-                    const fileName = project.genFileName(pid);
-
-                    console.log(`Creating package ${fileName} ...`);
-                    await addon.flush(fileName);
-                    console.log(`Uploading package ${fileName} ...`);
-                    await cli.uploadFile(fileName, project.version, wowVersionId);
-                    await fs.unlink(fileName);
-                    console.log(`Publish package ${fileName} done`);
-                }
+                console.log(`Creating package ${fileName} ...`);
+                await addon.flush(fileName);
+                console.log(`Uploading package ${fileName} ...`);
+                await cli.uploadFile(fileName, project.version, wowVersionId);
+                await fs.unlink(fileName);
+                console.log(`Publish package ${fileName} done`);
             }
         });
 

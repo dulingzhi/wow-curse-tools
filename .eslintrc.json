@@ -37,6 +37,9 @@
                 "functions": "never"
             }
         ],
+        "camelcase": [
+            "error"
+        ],
         "no-useless-constructor": "off",
         "space-before-function-paren": "off"
     }

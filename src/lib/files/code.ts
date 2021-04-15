@@ -62,6 +62,10 @@ export class CodeFilesFinder {
     }
 
     private async parseFile(file: string) {
+        if (!(await fs.pathExists(file))) {
+            throw Error(`not found file ${file}`);
+        }
+
         this._files.add(path.resolve(file));
 
         const ext = path.extname(file).toLowerCase();

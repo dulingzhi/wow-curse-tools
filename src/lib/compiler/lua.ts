@@ -17,7 +17,9 @@ export class LuaCompiler implements Compiler {
 
         const pid = gCompilerManager.env.pid;
         if (pid !== 'none') {
-            code = code.replace(new RegExp(`--\\[=*\\[@${pid}@`, 'g'), `--@${pid}@`);
+            code = code
+                .replace(new RegExp(`--\\[=*\\[@${pid}@`, 'g'), `--@${pid}@`)
+                .replace(new RegExp(`--@end-${pid}@\\]=*\\]`, 'g'), `--@end-${pid}@`);
         }
         return code;
     }

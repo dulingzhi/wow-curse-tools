@@ -26,6 +26,7 @@ interface BuildMap {
 
 interface WowPackage {
     name: string;
+    // eslint-disable-next-line camelcase
     curse_id?: number;
     builds?: BuildMap;
     localizations?: any;

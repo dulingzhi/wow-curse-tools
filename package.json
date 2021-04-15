@@ -9,7 +9,7 @@
     "build": "webpack --mode production",
     "compile": "webpack --mode development",
     "watch": "webpack --mode development --watch --info-verbosity verbose",
-    "start": "npm run build & npm install -g F:\\wow\\wow-curse-tools"
+    "test": "npm run build & npm install -g F:\\wow\\wow-curse-tools"
   },
   "author": "Dencer",
   "license": "MIT",
@@ -26,7 +26,7 @@
     "eslint-config-standard": "^16.0.2",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-promise": "^4.2.1",
     "form-data": "^4.0.0",
     "fs-extra": "^9.1.0",
     "got": "^11.8.2",

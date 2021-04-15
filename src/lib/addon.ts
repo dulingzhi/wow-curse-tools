@@ -25,22 +25,31 @@ export class Addon {
     }
 
     flush(fileName: string) {
-        return Promise.resolve(async (resolve: (value: boolean) => void) => {
-            for (const addon of this.project.addons) {
-                const files = await findFiles(addon.folder, addon.name);
+        return new Promise((resolve, reject) => {
+            return Promise.resolve(
+                (async () => {
+                    try {
+                        for (const addon of this.project.addons) {
+                            const files = await findFiles(addon.folder, addon.name);
 
-                for (const file of files) {
-                    const content = await gCompilerManager.compile(file.file);
-                    if (content) {
-                        this.zipFile.addBuffer(Buffer.from(content, 'utf-8'), file.relative);
-                    } else {
-                        this.zipFile.addFile(file.file, file.relative);
+                            for (const file of files) {
+                                const content = await gCompilerManager.compile(file.file);
+                                if (content) {
+                                    this.zipFile.addBuffer(Buffer.from(content, 'utf-8'), file.relative);
+                                } else {
+                                    this.zipFile.addFile(file.file, file.relative);
+                                }
+                            }
+                        }
+
+                        this.zipFile.end();
+                        this.zipFile.outputStream.pipe(fs.createWriteStream(fileName)).on('close', () => resolve(true));
+                    } catch (error) {
+                        console.error(error);
+                        reject(error);
                     }
-                }
-            }
-
-            this.zipFile.end();
-            this.zipFile.outputStream.pipe(fs.createWriteStream(fileName)).on('close', () => resolve(true));
+                })()
+            );
         });
     }
 }

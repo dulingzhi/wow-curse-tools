@@ -25,7 +25,7 @@ export class Addon {
     }
 
     flush(fileName: string) {
-        return new Promise(async (resolve) => {
+        return Promise.resolve(async (resolve: (value: boolean) => void) => {
             for (const addon of this.project.addons) {
                 const files = await findFiles(addon.folder, addon.name);
 

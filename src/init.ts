@@ -16,7 +16,7 @@ export class Init {
         const guessName = path.basename(path.resolve('./'));
         const opts = await inquirer.prompt([
             { type: 'input', name: 'name', message: 'Addon Name:', default: guessName },
-            { type: 'number', name: 'curse_id', message: 'Curse Project ID:' }
+            { type: 'number', name: 'curse_id', message: 'Curse Project ID:' },
         ]);
 
         const pkg = await fs.readJson('package.json');
@@ -30,7 +30,7 @@ export class Init {
 
         await fs.writeJson('package.json', pkg, {
             spaces: 2,
-            encoding: 'utf-8'
+            encoding: 'utf-8',
         });
     }
 }

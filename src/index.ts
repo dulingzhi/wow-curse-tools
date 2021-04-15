@@ -30,7 +30,7 @@ function main() {
             const project = new Project();
             await project.init();
 
-            for (const [pid, _env] of project.buildEnvs) {
+            for (const [pid] of project.buildEnvs) {
                 const fileName = project.genFileName(pid);
                 console.log(`Creating package ${fileName} ...`);
 

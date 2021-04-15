@@ -32,7 +32,7 @@ export class CodeFilesFinder {
     private async parseXml(file: string) {
         const folder = path.dirname(path.resolve(file));
 
-        const parseNodes = async (nodes: HTMLCollectionOf<Element>) => {
+        const parseNodes = async (nodes: any) => {
             for (let i = 0; i < nodes.length; i++) {
                 const element = nodes.item(i);
                 if (element) {
@@ -67,16 +67,16 @@ export class CodeFilesFinder {
         const ext = path.extname(file).toLowerCase();
 
         switch (ext) {
-            case '.toc':
-                await this.parseToc(file);
-                break;
-            case '.xml':
-                await this.parseXml(file);
-                break;
-            case '.lua':
-                break;
-            default:
-                throw Error('Unknown file type');
+        case '.toc':
+            await this.parseToc(file);
+            break;
+        case '.xml':
+            await this.parseXml(file);
+            break;
+        case '.lua':
+            break;
+        default:
+            throw Error('Unknown file type');
         }
     }
 

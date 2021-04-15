@@ -16,6 +16,6 @@ export interface File {
 export async function findFiles(folder: string, name: string): Promise<File[]> {
     return [
         ...(await new CodeFilesFinder().findFiles(path.resolve(folder, name + '.toc'))),
-        ...(await new ResFilesFinder().findFiles(folder))
-    ].map(file => ({ file, relative: path.join(name, path.relative(folder, file)) }));
+        ...(await new ResFilesFinder().findFiles(folder)),
+    ].map((file) => ({ file, relative: path.join(name, path.relative(folder, file)) }));
 }

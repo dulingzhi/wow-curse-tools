@@ -28,8 +28,8 @@ export class ResFilesFinder {
 
     private async walk(folder: string) {
         const files = (await fs.readdir(folder))
-            .filter(name => !name.startsWith('.') && !/^node_modules$/i.test(name))
-            .map(name => path.resolve(folder, name));
+            .filter((name) => !name.startsWith('.') && !/^node_modules$/i.test(name))
+            .map((name) => path.resolve(folder, name));
 
         for (const file of files) {
             const stat = await fs.stat(file);

@@ -11,6 +11,7 @@ export class TocCompiler implements Compiler {
     compile(code: string) {
         const env = gCompilerManager.env;
         const sb = [];
+        const version = env.version.split('-')[0];
         let inDebug = false;
 
         for (const line of code.split(/\r\n|\r|\n/g)) {
@@ -26,8 +27,8 @@ export class TocCompiler implements Compiler {
         code = sb.join('\n');
 
         return code
-            .replace(/#@project-version@/g, `## Version: ${env.version}`)
+            .replace(/#@project-version@/g, `## Version: ${version}`)
             .replace(/#@project-interface@/g, `## Interface: ${env.build}`)
-            .replace(/@project-version@/g, env.version);
+            .replace(/@project-version@/g, version);
     }
 }

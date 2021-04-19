@@ -8,7 +8,6 @@
 import * as fs from 'fs-extra';
 
 import { ZipFile } from 'yazl';
-import { findFiles } from './files';
 
 import { Project } from './project';
 import { gCompilerManager } from './compiler';
@@ -30,10 +29,12 @@ export class Addon {
                 (async () => {
                     try {
                         for (const addon of this.project.addons) {
-                            const files = await findFiles(addon.folder, addon.name);
+                            for (const file of addon.files) {
+                                let content;
+                                if (!file.noCompile) {
+                                    content = await gCompilerManager.compile(file.file);
+                                }
 
-                            for (const file of files) {
-                                const content = await gCompilerManager.compile(file.file);
                                 if (content) {
                                     this.zipFile.addBuffer(Buffer.from(content, 'utf-8'), file.relative);
                                 } else {

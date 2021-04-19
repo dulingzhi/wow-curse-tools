@@ -1,0 +1,20 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"windows": {
+				"command": "${workspaceFolder}\\node_modules\\.bin\\tsc",
+				"args": [
+					"--outDir",
+					"temp"
+				]
+			},
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build",
+			"label": "dev build"
+		}
+	]
+}

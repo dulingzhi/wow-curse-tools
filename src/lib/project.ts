@@ -8,10 +8,12 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import { CompilerEnv } from './compiler/compiler';
+import { File, findFiles } from './files';
 
 interface Addon {
     name: string;
     folder: string;
+    files: File[];
 }
 
 interface Localization {
@@ -39,6 +41,7 @@ export class Project implements Addon {
     private _folder: string;
     private _addons: Addon[] = [];
     private _localizations: Localization[] = [];
+    private _files: File[];
     private _buildEnvs = new Map<string, CompilerEnv>();
 
     constructor() {}
@@ -65,6 +68,10 @@ export class Project implements Addon {
 
     get localizations() {
         return this._localizations;
+    }
+
+    get files() {
+        return this._files;
     }
 
     get buildEnvs() {
@@ -100,6 +107,7 @@ export class Project implements Addon {
         this._name = p.name;
         this._version = pkg.version;
         this._curseId = p.curse_id || 0;
+        this._files = await findFiles(this._folder, this._name);
 
         if (p.builds) {
             for (const [pid, build] of Object.entries(p.builds)) {
@@ -128,10 +136,11 @@ export class Project implements Addon {
         this._addons.push(this);
 
         if (pkg.wow.addons) {
-            for (const [key, v] of Object.entries(pkg.wow.addons)) {
+            for (const [name, folder] of Object.entries(pkg.wow.addons) as [string, string][]) {
                 this._addons.push({
-                    name: key,
-                    folder: v as string,
+                    name: name,
+                    folder: folder,
+                    files: await findFiles(folder, name),
                 });
             }
         }

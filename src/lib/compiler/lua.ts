@@ -13,7 +13,8 @@ export class LuaCompiler implements Compiler {
             .replace(/--\s*@debug@/g, '--[===[@debug@')
             .replace(/--\s*@end-debug@/g, '--@end-debug@]===]')
             .replace(/--\[=*\[@non-debug@/g, '--@non-debug@')
-            .replace(/--@end-non-debug@\]=*\]/g, '--@end-non-debug@');
+            .replace(/--@end-non-debug@\]=*\]/g, '--@end-non-debug@')
+            .replace(/---@.+/g, '');
 
         const pid = gCompilerManager.env.pid;
         if (pid !== 'none') {

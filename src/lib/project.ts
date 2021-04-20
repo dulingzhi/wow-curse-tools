@@ -30,6 +30,8 @@ interface WowPackage {
     name: string;
     // eslint-disable-next-line camelcase
     curse_id?: number;
+    // eslint-disable-next-line camelcase
+    old_version_style: boolean;
     builds?: BuildMap;
     localizations?: any;
 }
@@ -105,8 +107,32 @@ export class Project implements Addon {
 
         this._folder = path.resolve('./');
         this._name = p.name;
-        this._version = pkg.version;
         this._curseId = p.curse_id || 0;
+
+        if (!p.old_version_style) {
+            this._version = pkg.version;
+        } else {
+            const m = (pkg.version as string).match(/(\d+)\.(\d+)\.(\d+)-?(\d*)/);
+            if (!m) {
+                throw Error('version error');
+            }
+
+            const major = Number.parseInt(m[1]);
+            const minor = Number.parseInt(m[2]);
+            const patch = Number.parseInt(m[3]);
+            const prerelease = Number.parseInt(m[4]);
+
+            if (minor >= 10000 || patch >= 100) {
+                throw Error('version error');
+            }
+
+            this._version = `${major}${minor.toString().padStart(4, '0')}.${patch.toString().padStart(2, '0')}`;
+
+            if (prerelease >= 0) {
+                this._version = `${this._version}-${prerelease}`;
+            }
+        }
+
         this._files = await findFiles(this._folder, this._name);
 
         if (p.builds) {

@@ -122,11 +122,7 @@ export class Project implements Addon {
             const patch = Number.parseInt(m[3]);
             const prerelease = Number.parseInt(m[4]);
 
-            if (minor >= 10000 || patch >= 100) {
-                throw Error('version error');
-            }
-
-            this._version = `${major}${minor.toString().padStart(4, '0')}.${patch.toString().padStart(2, '0')}`;
+            this._version = `${major * 10000 + minor}.${patch.toString().padStart(2, '0')}`;
 
             if (prerelease >= 0) {
                 this._version = `${this._version}-${prerelease}`;

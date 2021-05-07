@@ -1,6 +1,6 @@
 {
   "name": "wow-curse-tools",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "bin": {
     "wct": "./bin/wct"

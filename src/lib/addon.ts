@@ -12,7 +12,7 @@ import { ZipFile } from 'yazl';
 import { Project } from './project';
 import { gCompilerManager } from './compiler';
 
-export class Addon {
+export class AddonFlusher {
     private zipFile = new ZipFile();
 
     constructor(private project: Project, pid: string) {

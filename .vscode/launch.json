@@ -1,25 +1,19 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "pwa-node",
-            "request": "launch",
-            "name": "Launch Program",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}\\src\\index.ts",
-            "cwd": "E:\\addons\\WorkSpace\\Project\\MeetingStone",
-            "args": [
-                "package"
-            ],
-            "preLaunchTask": "dev build",
-            "outFiles": [
-                "${workspaceFolder}/temp/**/*.js"
-            ]
-        }
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Launch Program",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}\\src\\index.ts",
+      "cwd": "D:\\CMOP5\\_classic_\\Interface\\AddOns\\RFA",
+      "args": ["publish", "--token", "111", "retail"],
+      "preLaunchTask": "dev build",
+      "outFiles": ["${workspaceFolder}/temp/**/*.js"]
+    }
+  ]
 }

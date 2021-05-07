@@ -96,6 +96,25 @@ export class Project implements Addon {
         return '';
     }
 
+    private parseOldVersionStyle(version: string) {
+        const m = version.match(/(\d+)\.(\d+)\.(\d+)-?(\d*)/);
+        if (!m) {
+            throw Error('version error');
+        }
+
+        const major = Number.parseInt(m[1]);
+        const minor = Number.parseInt(m[2]);
+        const patch = Number.parseInt(m[3]);
+        const prerelease = Number.parseInt(m[4]);
+
+        version = `${major * 10000 + minor}.${patch.toString().padStart(2, '0')}`;
+
+        if (prerelease >= 0) {
+            version = `${version}-${prerelease}`;
+        }
+        return version;
+    }
+
     async init() {
         const pkg = await fs.readJson('./package.json');
 
@@ -112,21 +131,7 @@ export class Project implements Addon {
         if (!p.old_version_style) {
             this._version = pkg.version;
         } else {
-            const m = (pkg.version as string).match(/(\d+)\.(\d+)\.(\d+)-?(\d*)/);
-            if (!m) {
-                throw Error('version error');
-            }
-
-            const major = Number.parseInt(m[1]);
-            const minor = Number.parseInt(m[2]);
-            const patch = Number.parseInt(m[3]);
-            const prerelease = Number.parseInt(m[4]);
-
-            this._version = `${major * 10000 + minor}.${patch.toString().padStart(2, '0')}`;
-
-            if (prerelease >= 0) {
-                this._version = `${this._version}-${prerelease}`;
-            }
+            this._version = this.parseOldVersionStyle(pkg.version);
         }
 
         this._files = await findFiles(this._folder, this._name);

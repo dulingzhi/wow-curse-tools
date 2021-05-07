@@ -1,46 +1,48 @@
 {
-    "env": {
-        "es2021": true,
-        "node": true
-    },
-    "extends": [
-        "standard"
+  "env": {
+    "es2021": true,
+    "node": true
+  },
+  "extends": ["standard"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "indent": [
+      "error",
+      4,
+      {
+        "SwitchCase": 1
+      }
     ],
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-        "ecmaVersion": 12,
-        "sourceType": "module"
-    },
-    "plugins": [
-        "@typescript-eslint"
+    "max-len": ["error", 120],
+    "comma-dangle": [
+      "error",
+      {
+        "arrays": "always-multiline",
+        "objects": "always-multiline",
+        "imports": "never",
+        "exports": "never",
+        "functions": "never"
+      }
     ],
-    "rules": {
-        "indent": [
-            "error",
-            4
-        ],
-        "max-len": [
-            "error",
-            120
-        ],
-        "semi": [
-            "error",
-            "always"
-        ],
-        "comma-dangle": [
-            "error",
-            {
-                "arrays": "always-multiline",
-                "objects": "always-multiline",
-                "imports": "never",
-                "exports": "never",
-                "functions": "never"
-            }
-        ],
-        "camelcase": [
-            "error"
-        ],
-        "no-useless-constructor": "off",
-        "space-before-function-paren": "off"
-    }
+    "semi": ["error", "always"],
+    "space-before-function-paren": [
+      "error",
+      {
+        "anonymous": "never",
+        "named": "never",
+        "asyncArrow": "always"
+      }
+    ],
+    "space-before-blocks": ["error", "always"],
+    "no-unused-vars": "off",
+    "no-useless-constructor": "off",
+    "no-dupe-class-members": "off",
+    "@typescript-eslint/no-unused-vars": ["error"],
+    "@typescript-eslint/no-require-imports": "error"
+  }
 }

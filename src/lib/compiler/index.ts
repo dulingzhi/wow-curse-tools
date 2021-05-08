@@ -8,8 +8,10 @@
 import { gCompilerManager } from './compiler';
 import { TocCompiler } from './toc';
 import { LuaCompiler } from './lua';
+import { XmlCompiler } from './xml';
 
 gCompilerManager.register('.toc', new TocCompiler());
 gCompilerManager.register('.lua', new LuaCompiler());
+gCompilerManager.register('.xml', new XmlCompiler());
 
 export { gCompilerManager };

@@ -15,8 +15,8 @@ import { gCompilerManager } from './compiler';
 export class AddonFlusher {
     private zipFile = new ZipFile();
 
-    constructor(private project: Project, pid: string) {
-        const env = project.buildEnvs.get(pid);
+    constructor(private project: Project, buildId: string) {
+        const env = project.buildEnvs.get(buildId);
         if (!env) {
             throw Error('not found env');
         }

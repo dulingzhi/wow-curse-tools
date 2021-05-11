@@ -32,7 +32,7 @@ export class XmlCompiler implements Compiler {
             if (not.length > 1 || not.length !== builds.length) {
                 throw Error('xml build error');
             }
-            return gCompilerManager.env.pid === not[0];
+            return gCompilerManager.env.buildId === not[0];
         }
 
         const or = builds.filter((x) => !x.startsWith('!'));
@@ -40,7 +40,7 @@ export class XmlCompiler implements Compiler {
             throw Error('bang');
         }
 
-        if (or.includes(gCompilerManager.env.pid)) {
+        if (or.includes(gCompilerManager.env.buildId)) {
             return false;
         }
         return true;

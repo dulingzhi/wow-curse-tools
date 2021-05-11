@@ -16,11 +16,11 @@ export class LuaCompiler implements Compiler {
             .replace(/--@end-non-debug@\]=*\]/g, '--@end-non-debug@')
             .replace(/---@.+/g, '');
 
-        const pid = gCompilerManager.env.pid;
-        if (pid !== 'none') {
+        const buildId = gCompilerManager.env.buildId;
+        if (buildId !== 'none') {
             code = code
-                .replace(new RegExp(`--\\[=*\\[@${pid}@`, 'g'), `--@${pid}@`)
-                .replace(new RegExp(`--@end-${pid}@\\]=*\\]`, 'g'), `--@end-${pid}@`);
+                .replace(new RegExp(`--\\[=*\\[@${buildId}@`, 'g'), `--@${buildId}@`)
+                .replace(new RegExp(`--@end-${buildId}@\\]=*\\]`, 'g'), `--@end-${buildId}@`);
         }
         return code;
     }

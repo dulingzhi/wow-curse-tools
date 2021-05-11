@@ -34,13 +34,13 @@ export class Publish {
             }
         }
 
-        for (const [pid, env] of project.buildEnvs) {
-            if (!builds || builds.includes(pid)) {
-                const addon = new AddonFlusher(project, pid);
+        for (const [buildId, env] of project.buildEnvs) {
+            if (!builds || builds.includes(buildId)) {
+                const addon = new AddonFlusher(project, buildId);
                 const wowVersionId = await cli.getGameVersionIdByName(env.wowVersion);
                 console.log('wow version id:', wowVersionId);
 
-                const fileName = project.genFileName(pid);
+                const fileName = project.genFileName(buildId);
 
                 console.log(`Creating package ${fileName} ...`);
                 await addon.flush(fileName);

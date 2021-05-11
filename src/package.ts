@@ -13,13 +13,13 @@ export class Package {
         const project = new Project();
         await project.init();
 
-        for (const [pid] of project.buildEnvs) {
-            if (!builds || builds.includes(pid)) {
-                const fileName = project.genFileName(pid);
+        for (const [buildId] of project.buildEnvs) {
+            if (!builds || builds.includes(buildId)) {
+                const fileName = project.genFileName(buildId);
                 console.log(`Creating package ${fileName} ...`);
 
-                const addon = new AddonFlusher(project, pid);
-                await addon.flush(project.genFileName(pid));
+                const addon = new AddonFlusher(project, buildId);
+                await addon.flush(project.genFileName(buildId));
                 console.log(`Package ${fileName} done.`);
             }
         }

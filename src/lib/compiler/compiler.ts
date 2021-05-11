@@ -12,9 +12,13 @@ export interface Compiler {
     compile(code: string): string | undefined;
 }
 
+export interface BuildInfo {
+    interface: string;
+}
+
 export interface CompilerEnv {
-    pid: string;
-    build: string;
+    buildId: string;
+    buildInfo: BuildInfo;
     version: string;
     wowVersion: string;
 }

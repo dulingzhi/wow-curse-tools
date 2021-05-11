@@ -7,7 +7,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { CompilerEnv } from './compiler/compiler';
+import { BuildInfo, CompilerEnv } from './compiler/compiler';
 import { File, findFiles } from './files';
 
 interface Addon {
@@ -22,8 +22,7 @@ interface Localization {
 }
 
 interface BuildMap {
-    classic: string;
-    retail: string;
+    [key: string]: BuildInfo | string;
 }
 
 interface WowPackage {
@@ -80,11 +79,11 @@ export class Project implements Addon {
         return this._buildEnvs;
     }
 
-    genFileName(pid: string) {
-        if (!pid || pid === 'none') {
+    genFileName(buildId: string) {
+        if (!buildId || buildId === 'none') {
             return `${this.name}-${this.version}.zip`;
         } else {
-            return `${this.name}-${pid}-${this.version}.zip`;
+            return `${this.name}-${buildId}-${this.version}.zip`;
         }
     }
 
@@ -137,12 +136,14 @@ export class Project implements Addon {
         this._files = await findFiles(this._folder, this._name);
 
         if (p.builds) {
-            for (const [pid, build] of Object.entries(p.builds)) {
-                this._buildEnvs.set(pid, {
-                    build,
-                    pid,
+            for (const [buildId, info] of Object.entries(p.builds)) {
+                const buildInfo = typeof info === 'string' ? { interface: info } : info;
+
+                this._buildEnvs.set(buildId, {
+                    buildId,
+                    buildInfo,
                     version: this._version,
-                    wowVersion: this.parseWowVersion(build),
+                    wowVersion: this.parseWowVersion(buildInfo.interface),
                 });
             }
         }
@@ -152,8 +153,8 @@ export class Project implements Addon {
             const m = toc.match(/##\s*Interface\s*:\s*(\d+)/);
             if (m) {
                 this._buildEnvs.set('none', {
-                    pid: 'none',
-                    build: m[1],
+                    buildId: 'none',
+                    buildInfo: { interface: m[1] },
                     version: this._version,
                     wowVersion: this.parseWowVersion(m[1]),
                 });

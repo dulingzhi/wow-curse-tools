@@ -28,7 +28,7 @@ export class TocCompiler implements Compiler {
 
         return code
             .replace(/#@project-version@/g, `## Version: ${version}`)
-            .replace(/#@project-interface@/g, `## Interface: ${env.build}`)
+            .replace(/#@project-interface@/g, `## Interface: ${env.buildInfo.interface}`)
             .replace(/@project-version@/g, version);
     }
 }

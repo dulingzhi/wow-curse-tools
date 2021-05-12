@@ -1,0 +1,8 @@
+src/
+temp/
+.vscode/
+.editorconfig
+.eslintrc.json
+tsconfig.json
+webpack.config.js
+*.tgz

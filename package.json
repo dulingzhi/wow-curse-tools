@@ -2,15 +2,15 @@
   "name": "wow-curse-tools",
   "version": "1.0.6",
   "description": "",
+  "main": "dist/index.js",
   "bin": {
     "wct": "./bin/wct"
   },
   "scripts": {
+    "prepack": "npm run build",
     "build": "webpack --mode production",
     "compile": "webpack --mode development",
-    "watch": "webpack --mode development --watch --info-verbosity verbose",
-    "test": "npm run build & npm install -g F:\\wow\\wow-curse-tools",
-    "version": "npm run build && git add dist/index.js dist/index.js.LICENSE.txt"
+    "watch": "webpack --mode development --watch --info-verbosity verbose"
   },
   "author": "Dencer",
   "license": "MIT",

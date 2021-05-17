@@ -6,7 +6,9 @@
  */
 
 import { DOMParser, XMLSerializer } from 'xmldom';
-import { Compiler, gCompilerManager } from './compiler';
+import { Compiler } from './compiler';
+
+import { isNeedRemoveNode } from '../util';
 
 export class XmlCompiler implements Compiler {
     compile(code: string) {
@@ -15,35 +17,6 @@ export class XmlCompiler implements Compiler {
         this.processNodes(doc.childNodes);
 
         return new XMLSerializer().serializeToString(doc);
-    }
-
-    isNeedRemoveNode(node: Element) {
-        const builds = node
-            .getAttribute('build')
-            ?.split(',')
-            .filter((x) => x !== '');
-
-        if (!builds || builds.length === 0) {
-            return false;
-        }
-
-        const not = builds.filter((x) => x.startsWith('!')).map((x) => x.substr(1));
-        if (not.length > 0) {
-            if (not.length > 1 || not.length !== builds.length) {
-                throw Error('xml build error');
-            }
-            return gCompilerManager.env.buildId === not[0];
-        }
-
-        const or = builds.filter((x) => !x.startsWith('!'));
-        if (or.length === 0) {
-            throw Error('bang');
-        }
-
-        if (or.includes(gCompilerManager.env.buildId)) {
-            return false;
-        }
-        return true;
     }
 
     processNodes(nodes: NodeListOf<ChildNode>) {
@@ -56,7 +29,7 @@ export class XmlCompiler implements Compiler {
 
             if (node.nodeType === 1) {
                 const e = node as Element;
-                if (this.isNeedRemoveNode(e)) {
+                if (isNeedRemoveNode(e)) {
                     node.parentNode?.removeChild(node);
                 } else {
                     e.removeAttribute('build');

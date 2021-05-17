@@ -9,6 +9,8 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 
 import { DOMParser } from 'xmldom';
+import { isNeedRemoveNode } from '../util';
+import { gEnv } from '../env';
 
 export class CodeFilesFinder {
     private _files = new Set<string>();
@@ -35,7 +37,7 @@ export class CodeFilesFinder {
         const parseNodes = async (nodes: HTMLCollectionOf<Element>) => {
             for (let i = 0; i < nodes.length; i++) {
                 const element = nodes.item(i);
-                if (element) {
+                if (element && !isNeedRemoveNode(element)) {
                     const f = element.getAttribute('file');
                     if (f) {
                         await this.parseFile(path.resolve(folder, this.parseFileName(f)));
@@ -62,11 +64,16 @@ export class CodeFilesFinder {
     }
 
     private async parseFile(file: string) {
-        if (!(await fs.pathExists(file))) {
-            throw Error(`not found file ${file}`);
-        }
-
         this._files.add(path.resolve(file));
+
+        if (!(await fs.pathExists(file))) {
+            if (!gEnv.env.debug) {
+                throw Error(`not found file ${file}`);
+            } else {
+                console.error(`not found file ${file}`);
+                return;
+            }
+        }
 
         const ext = path.extname(file).toLowerCase();
 

@@ -7,13 +7,12 @@
 
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { BuildInfo, CompilerEnv } from './compiler/compiler';
-import { File, findFiles } from './files';
+import { BuildInfo, CompilerEnv } from './env';
+import { findFiles } from './files';
 
 interface Addon {
     name: string;
     folder: string;
-    files: File[];
 }
 
 interface Localization {
@@ -42,10 +41,9 @@ export class Project implements Addon {
     private _folder: string;
     private _addons: Addon[] = [];
     private _localizations: Localization[] = [];
-    private _files: File[];
     private _buildEnvs = new Map<string, CompilerEnv>();
 
-    constructor() {}
+    constructor(readonly debug = false) {}
 
     get name() {
         return this._name;
@@ -69,10 +67,6 @@ export class Project implements Addon {
 
     get localizations() {
         return this._localizations;
-    }
-
-    get files() {
-        return this._files;
     }
 
     get buildEnvs() {
@@ -114,6 +108,10 @@ export class Project implements Addon {
         return version;
     }
 
+    async findFiles() {
+        return await findFiles(this._folder, this._name);
+    }
+
     async init() {
         const pkg = await fs.readJson('./package.json');
 
@@ -133,16 +131,15 @@ export class Project implements Addon {
             this._version = this.parseOldVersionStyle(pkg.version);
         }
 
-        this._files = await findFiles(this._folder, this._name);
-
         if (p.builds) {
             for (const [buildId, info] of Object.entries(p.builds)) {
-                const buildInfo = typeof info === 'string' ? { interface: info } : info;
+                const buildInfo: BuildInfo = typeof info === 'string' ? { interface: info } : info;
 
                 this._buildEnvs.set(buildId, {
                     buildId,
                     buildInfo,
                     version: this._version,
+                    debug: this.debug,
                     wowVersion: this.parseWowVersion(buildInfo.interface),
                 });
             }
@@ -156,6 +153,7 @@ export class Project implements Addon {
                     buildId: 'none',
                     buildInfo: { interface: m[1] },
                     version: this._version,
+                    debug: this.debug,
                     wowVersion: this.parseWowVersion(m[1]),
                 });
             }
@@ -168,7 +166,6 @@ export class Project implements Addon {
                 this._addons.push({
                     name: name,
                     folder: folder,
-                    files: await findFiles(folder, name),
                 });
             }
         }

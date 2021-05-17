@@ -12,24 +12,8 @@ export interface Compiler {
     compile(code: string): string | undefined;
 }
 
-export interface BuildInfo {
-    interface: string;
-}
-
-export interface CompilerEnv {
-    buildId: string;
-    buildInfo: BuildInfo;
-    version: string;
-    wowVersion: string;
-}
-
 class CompilerManager {
-    private _env: CompilerEnv;
     private _compilers = new Map<string, Compiler>();
-
-    get env() {
-        return this._env;
-    }
 
     register(ext: string, compiler: Compiler) {
         this._compilers.set(ext, compiler);
@@ -43,10 +27,6 @@ class CompilerManager {
             return;
         }
         return compiler.compile(await fs.readFile(file, { encoding: 'utf-8' }));
-    }
-
-    setEnv(env: CompilerEnv) {
-        this._env = env;
     }
 }
 

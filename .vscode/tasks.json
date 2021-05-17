@@ -6,6 +6,7 @@
 			"windows": {
 				"command": "${workspaceFolder}\\node_modules\\.bin\\tsc",
 				"args": [
+					// "--watch",
 					"--outDir",
 					"temp"
 				]

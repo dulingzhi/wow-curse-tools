@@ -41,6 +41,15 @@ class App {
                 );
             });
 
+        program
+            .command('watch')
+            .arguments('[build]')
+            .option('-O --output <output>')
+            .description('watch the addon')
+            .action(async (build: string, opts) => {
+                await new (await import('./watch')).Watch().run(opts.output, build);
+            });
+
         program.parse(process.argv);
     }
 }

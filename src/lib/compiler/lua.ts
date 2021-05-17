@@ -5,18 +5,22 @@
  * @Date   : 10/29/2019, 4:00:32 PM
  */
 
-import { Compiler, gCompilerManager } from './compiler';
+import { gEnv } from '../env';
+import { Compiler } from './compiler';
 
 export class LuaCompiler implements Compiler {
     compile(code: string) {
-        code = code
-            .replace(/--\s*@debug@/g, '--[===[@debug@')
-            .replace(/--\s*@end-debug@/g, '--@end-debug@]===]')
-            .replace(/--\[=*\[@non-debug@/g, '--@non-debug@')
-            .replace(/--@end-non-debug@\]=*\]/g, '--@end-non-debug@')
-            .replace(/---@.+/g, '');
+        code = code.replace(/---@.+/g, '');
 
-        const buildId = gCompilerManager.env.buildId;
+        if (!gEnv.env.debug) {
+            code = code
+                .replace(/--\s*@debug@/g, '--[===[@debug@')
+                .replace(/--\s*@end-debug@/g, '--@end-debug@]===]')
+                .replace(/--\[=*\[@non-debug@/g, '--@non-debug@')
+                .replace(/--@end-non-debug@\]=*\]/g, '--@end-non-debug@');
+        }
+
+        const buildId = gEnv.env.buildId;
         if (buildId !== 'none') {
             code = code
                 .replace(new RegExp(`--\\[=*\\[@${buildId}@`, 'g'), `--@${buildId}@`)

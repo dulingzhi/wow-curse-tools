@@ -9,6 +9,12 @@
     "ecmaVersion": 12,
     "sourceType": "module"
   },
+  "globals": {
+    "HTMLCollectionOf": true,
+    "Element": true,
+    "NodeListOf": true,
+    "ChildNode": true
+  },
   "plugins": ["@typescript-eslint"],
   "rules": {
     "indent": [

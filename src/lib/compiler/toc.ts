@@ -5,21 +5,30 @@
  * @Date   : 10/29/2019, 4:00:21 PM
  */
 
-import { Compiler, gCompilerManager } from './compiler';
+import { gEnv } from '../env';
+import { Compiler } from './compiler';
 
 export class TocCompiler implements Compiler {
     compile(code: string) {
-        const env = gCompilerManager.env;
+        const env = gEnv.env;
         const sb = [];
         const version = env.version.split('-')[0];
+
         let inDebug = false;
 
         for (const line of code.split(/\r\n|\r|\n/g)) {
-            if (line.trim() === '#@debug@') {
-                inDebug = true;
-            } else if (line.trim() === '#@end-debug@') {
-                inDebug = false;
-            } else if (!inDebug) {
+            if (!env.debug) {
+                if (line.trim() === '#@debug@') {
+                    inDebug = true;
+                    continue;
+                } else if (line.trim() === '#@end-debug@') {
+                    inDebug = false;
+                    continue;
+                } else if (inDebug) {
+                    continue;
+                }
+            }
+            if (!inDebug) {
                 sb.push(line);
             }
         }

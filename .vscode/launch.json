@@ -9,9 +9,9 @@
       "request": "launch",
       "name": "Launch Program",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}\\src\\index.ts",
-      "cwd": "D:\\CMOP5\\_classic_\\Interface\\AddOns\\RFA",
-      "args": ["publish", "--token", "111", "retail"],
+      "program": "${workspaceFolder}\\src\\exec.ts",
+      "cwd": "F:\\addons\\MeetingHorn",
+      "args": ["watch", "classic", "--output", "D:\\CMOP5\\_classic_\\Interface\\AddOns"],
       "preLaunchTask": "dev build",
       "outFiles": ["${workspaceFolder}/temp/**/*.js"]
     }

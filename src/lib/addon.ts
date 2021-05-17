@@ -11,6 +11,8 @@ import { ZipFile } from 'yazl';
 
 import { Project } from './project';
 import { gCompilerManager } from './compiler';
+import { gEnv } from './env';
+import { findFiles } from './files';
 
 export class AddonFlusher {
     private zipFile = new ZipFile();
@@ -20,7 +22,7 @@ export class AddonFlusher {
         if (!env) {
             throw Error('not found env');
         }
-        gCompilerManager.setEnv(env);
+        gEnv.setEnv(env);
     }
 
     flush(fileName: string) {
@@ -29,7 +31,7 @@ export class AddonFlusher {
                 (async () => {
                     try {
                         for (const addon of this.project.addons) {
-                            for (const file of addon.files) {
+                            for (const file of await findFiles(addon.folder, addon.name)) {
                                 let content;
                                 if (!file.noCompile) {
                                     content = await gCompilerManager.compile(file.file);

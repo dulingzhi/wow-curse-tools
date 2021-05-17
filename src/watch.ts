@@ -25,6 +25,12 @@ export class Watch {
         this.output = output;
 
         await this.project.init();
+        console.log(path.resolve(this.output, this.project.name));
+        console.log(this.project.folder);
+
+        if (path.resolve(this.output, this.project.name).toLowerCase() === this.project.folder.toLowerCase()) {
+            throw Error('code folder is same as output folder');
+        }
 
         const env = this.project.buildEnvs.get(buildId || 'none');
         if (!env) {
@@ -34,10 +40,6 @@ export class Watch {
         gEnv.setEnv(env);
 
         const watcher = new Watcher(this.project.folder);
-
-        watcher.on('all', (event: any, targetPath: any, next: any) => {
-            console.log(event, targetPath, next);
-        });
 
         setTimeout(() => {
             watcher

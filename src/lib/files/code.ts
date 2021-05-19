@@ -13,15 +13,15 @@ import { isNeedRemoveNode } from '../util';
 import { gEnv } from '../env';
 
 export class CodeFilesFinder {
-    private _files = new Set<string>();
+    private _paths = new Set<string>();
 
     private parseFileName(name: string) {
         return name.replace(/\\+/g, '/');
     }
 
-    private async parseToc(file: string) {
-        const content = await fs.readFile(file, { encoding: 'utf-8' });
-        const folder = path.dirname(path.resolve(file));
+    private async parseToc(filePath: string) {
+        const content = await fs.readFile(filePath, { encoding: 'utf-8' });
+        const folder = path.dirname(path.resolve(filePath));
 
         for (let line of content.split(/[\r\n]+/)) {
             line = line.trim();
@@ -31,8 +31,8 @@ export class CodeFilesFinder {
         }
     }
 
-    private async parseXml(file: string) {
-        const folder = path.dirname(path.resolve(file));
+    private async parseXml(filePath: string) {
+        const folder = path.dirname(path.resolve(filePath));
 
         const parseNodes = async (nodes: HTMLCollectionOf<Element>) => {
             for (let i = 0; i < nodes.length; i++) {
@@ -46,7 +46,7 @@ export class CodeFilesFinder {
             }
         };
 
-        const content = await fs.readFile(file, { encoding: 'utf-8' });
+        const content = await fs.readFile(filePath, { encoding: 'utf-8' });
         const doc = new DOMParser().parseFromString(content);
         const ui = doc.getElementsByTagName('Ui');
 
@@ -63,26 +63,26 @@ export class CodeFilesFinder {
         await parseNodes(root.getElementsByTagName('Script'));
     }
 
-    private async parseFile(file: string) {
-        this._files.add(path.resolve(file));
+    private async parseFile(filePath: string) {
+        this._paths.add(path.resolve(filePath));
 
-        if (!(await fs.pathExists(file))) {
-            if (!gEnv.env.debug) {
-                throw Error(`not found file ${file}`);
+        if (!(await fs.pathExists(filePath))) {
+            if (!gEnv.env?.debug) {
+                throw Error(`not found file ${filePath}`);
             } else {
-                console.error(`not found file ${file}`);
+                console.error(`not found file ${filePath}`);
                 return;
             }
         }
 
-        const ext = path.extname(file).toLowerCase();
+        const ext = path.extname(filePath).toLowerCase();
 
         switch (ext) {
             case '.toc':
-                await this.parseToc(file);
+                await this.parseToc(filePath);
                 break;
             case '.xml':
-                await this.parseXml(file);
+                await this.parseXml(filePath);
                 break;
             case '.lua':
                 break;
@@ -91,8 +91,8 @@ export class CodeFilesFinder {
         }
     }
 
-    async findFiles(file: string) {
-        await this.parseFile(path.resolve(file));
-        return this._files;
+    async findFiles(filePath: string) {
+        await this.parseFile(path.resolve(filePath));
+        return this._paths;
     }
 }

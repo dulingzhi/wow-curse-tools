@@ -17,7 +17,7 @@ interface Addon {
 
 interface Localization {
     lang: string;
-    file: string;
+    path: string;
 }
 
 interface BuildMap {
@@ -178,7 +178,7 @@ export class Project implements Addon {
             for (const [key, v] of Object.entries(pkg.wow.localizations)) {
                 this._localizations.push({
                     lang: key,
-                    file: v as string,
+                    path: v as string,
                 });
             }
         }

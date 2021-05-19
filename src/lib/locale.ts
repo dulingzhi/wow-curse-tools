@@ -7,8 +7,8 @@
 
 import * as fs from 'fs-extra';
 
-export async function readLocale(file: string) {
-    const content = await fs.readFile(file, { encoding: 'utf-8' });
+export async function readLocale(filePath: string) {
+    const content = await fs.readFile(filePath, { encoding: 'utf-8' });
     const m = content.match(/--\s*@import@((.|\r|\n)+)--\s*@end-import@/);
     if (!m) {
         return;

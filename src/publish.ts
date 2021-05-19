@@ -27,7 +27,7 @@ export class Publish {
         const cli = new Curse(project.curseId, token);
 
         for (const l of project.localizations) {
-            const locale = await readLocale(l.file);
+            const locale = await readLocale(l.path);
 
             if (locale) {
                 await cli.importLocale(l.lang, locale);

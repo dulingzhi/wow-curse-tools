@@ -42,7 +42,7 @@ export class Curse {
         return 0;
     }
 
-    async uploadFile(file: string, version: string, wowVersion: number) {
+    async uploadFile(filePath: string, version: string, wowVersion: number) {
         if (!this.curseId) {
             console.error('error curse id');
             return;
@@ -59,7 +59,7 @@ export class Curse {
                 displayName: version,
             })
         );
-        form.append('file', fs.createReadStream(file));
+        form.append('file', fs.createReadStream(filePath));
 
         const resp = await Got.post(url, {
             body: form,

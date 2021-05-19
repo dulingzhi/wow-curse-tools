@@ -45,6 +45,7 @@
       }
     ],
     "space-before-blocks": ["error", "always"],
+    "generator-star-spacing": ["error", { "before": false, "after": true }],
     "no-unused-vars": "off",
     "no-useless-constructor": "off",
     "no-dupe-class-members": "off",

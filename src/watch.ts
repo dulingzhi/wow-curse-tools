@@ -56,17 +56,17 @@ export class Watch {
     private async refresh() {
         try {
             const files = new Map(
-                (await findFiles(this.project.folder, this.project.name)).map((file) => [file.file, file])
+                (await findFiles(this.project.folder, this.project.name)).map((file) => [file.path, file])
             );
 
             for (const file of files.values()) {
-                if (!this.files.has(file.file)) {
+                if (!this.files.has(file.path)) {
                     await this.compileFile(file);
                 }
             }
 
             for (const file of this.files.values()) {
-                if (!files.has(file.file)) {
+                if (!files.has(file.path)) {
                     await this.removeFile(file);
                 }
             }
@@ -84,7 +84,7 @@ export class Watch {
     private async compileFile(file: File) {
         let content;
         if (!file.noCompile) {
-            content = await gCompilerManager.compile(file.file);
+            content = await gCompilerManager.compile(file.path);
         }
 
         const targetFile = this.resolveFilePath(file);
@@ -94,7 +94,7 @@ export class Watch {
         if (content) {
             await fs.writeFile(targetFile, content);
         } else {
-            await fs.copyFile(file.file, targetFile);
+            await fs.copyFile(file.path, targetFile);
         }
 
         console.log(`compile file: ${targetFile}`);

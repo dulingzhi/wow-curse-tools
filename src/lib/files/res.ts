@@ -12,15 +12,15 @@ export class ResFilesFinder {
     private _files = new Set<string>();
     private exts = new Set(['.blp', '.tga', '.m2']);
 
-    private isResource(file: string) {
-        const baseName = path.basename(file);
+    private isResource(filePath: string) {
+        const baseName = path.basename(filePath);
         if (/^license/i.test(baseName)) {
             return true;
         }
         if (/^bindings\.xml$/i.test(baseName)) {
             return true;
         }
-        if (this.exts.has(path.extname(file).toLowerCase())) {
+        if (this.exts.has(path.extname(filePath).toLowerCase())) {
             return true;
         }
         return false;

@@ -31,23 +31,23 @@ export class AddonFlusher {
         });
     }
 
-    async flush(fileName: string) {
+    async flush(filePath: string) {
         for (const addon of this.project.addons) {
             for (const file of await findFiles(addon.folder, addon.name)) {
                 let content;
                 if (!file.noCompile) {
-                    content = await gCompilerManager.compile(file.file);
+                    content = await gCompilerManager.compile(file.path);
                 }
 
                 if (content) {
                     this.zipFile.addBuffer(Buffer.from(content, 'utf-8'), file.relative);
                 } else {
-                    this.zipFile.addFile(file.file, file.relative);
+                    this.zipFile.addFile(file.path, file.relative);
                 }
             }
         }
 
         this.zipFile.end();
-        await this.writeZip(this.zipFile, fs.createWriteStream(fileName));
+        await this.writeZip(this.zipFile, fs.createWriteStream(filePath));
     }
 }

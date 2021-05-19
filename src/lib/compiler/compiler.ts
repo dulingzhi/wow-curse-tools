@@ -19,14 +19,14 @@ class CompilerManager {
         this._compilers.set(ext, compiler);
     }
 
-    async compile(file: string) {
-        const ext = path.extname(file);
+    async compile(filePath: string) {
+        const ext = path.extname(filePath);
         const compiler = this._compilers.get(ext);
 
         if (!compiler) {
             return;
         }
-        return compiler.compile(await fs.readFile(file, { encoding: 'utf-8' }));
+        return compiler.compile(await fs.readFile(filePath, { encoding: 'utf-8' }));
     }
 }
 

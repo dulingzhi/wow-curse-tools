@@ -50,6 +50,14 @@ class App {
                 await new (await import('./watch')).Watch().run(opts.output, build);
             });
 
+        program
+            .command('emmyui')
+            .arguments('[toc]')
+            .description('gen ui')
+            .action(async (toc: string) => {
+                await new (await import('./emmyui')).EmmyUI().run(toc);
+            });
+
         program.parse(process.argv);
     }
 }

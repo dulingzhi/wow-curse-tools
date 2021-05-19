@@ -10,22 +10,28 @@ import { Compiler } from './compiler';
 
 export class LuaCompiler implements Compiler {
     compile(code: string) {
-        code = code.replace(/---@.+/g, '');
+        const eq = this.getCommentEqual(code);
+        const m = new Map<string, boolean>([
+            ['debug', !gEnv.env.debug],
+            ['release', gEnv.env.debug],
+            ...gEnv.env.builds.map<[string, boolean]>((x) => [x, x !== gEnv.env.buildId]),
+        ]);
 
-        if (!gEnv.env.debug) {
-            code = code
-                .replace(/--\s*@debug@/g, '--[===[@debug@')
-                .replace(/--\s*@end-debug@/g, '--@end-debug@]===]')
-                .replace(/--\[=*\[@non-debug@/g, '--@non-debug@')
-                .replace(/--@end-non-debug@\]=*\]/g, '--@end-non-debug@');
-        }
+        return code
+            .replace(/--\s*@(?<!end-|non-)(.+)@/g, (r, x) => (!m.has(x) || !m.get(x) ? r : `--[${eq}[@${x}@`))
+            .replace(/--\s*@end-(?<!non-)(.+)@/g, (r, x) => (!m.has(x) || !m.get(x) ? r : `--@end-${x}@]${eq}]`))
+            .replace(/--\[=*\[@non-(.+)@/g, (r, x) => (!m.has(x) || m.get(x) ? r : `--@non-${x}@`))
+            .replace(/--@end-non-(.+)@\]=*\]/g, (r, x) => (!m.has(x) || m.get(x) ? r : `--@end-non-${x}@`));
+    }
 
-        const buildId = gEnv.env.buildId;
-        if (buildId !== 'none') {
-            code = code
-                .replace(new RegExp(`--\\[=*\\[@${buildId}@`, 'g'), `--@${buildId}@`)
-                .replace(new RegExp(`--@end-${buildId}@\\]=*\\]`, 'g'), `--@end-${buildId}@`);
+    protected getCommentEqual(code: string) {
+        const m = code.match(/\[(=*)\[|\](=*)\]/g);
+        const exists = new Set(m ? m.map((x) => x.length - 2) : []);
+
+        let length = 0;
+        while (exists.has(length)) {
+            length++;
         }
-        return code;
+        return '='.repeat(length);
     }
 }

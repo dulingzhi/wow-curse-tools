@@ -15,11 +15,13 @@ import { File, findFiles } from './lib/files';
 import { gCompilerManager } from './lib/compiler';
 import { gEnv } from './lib/env';
 import { isListFile } from './lib/util';
+import { Mutex } from 'async-mutex';
 
 export class Watch {
     private output: string;
     private files = new Map<string, File>();
     private project = new Project(true);
+    private mutex = new Mutex();
 
     async run(output: string, buildId?: string) {
         this.output = output;
@@ -110,21 +112,35 @@ export class Watch {
     private async onFileChanged(filePath: string) {
         const file = this.files.get(filePath);
         if (file) {
-            await this.compileFile(file);
+            const release = await this.mutex.acquire();
+            try {
+                await this.compileFile(file);
 
-            if (isListFile(filePath)) {
-                await this.refresh();
+                if (isListFile(filePath)) {
+                    await this.refresh();
+                }
+            } catch (error) {
+                console.error(error);
+            } finally {
+                release();
             }
         }
     }
 
-    async onFileUnlink(filePath: string) {
+    private async onFileUnlink(filePath: string) {
         const file = this.files.get(filePath);
         if (file) {
-            await this.removeFile(file);
+            const release = await this.mutex.acquire();
+            try {
+                await this.removeFile(file);
 
-            if (isListFile(filePath)) {
-                await this.refresh();
+                if (isListFile(filePath)) {
+                    await this.refresh();
+                }
+            } catch (error) {
+                console.error(error);
+            } finally {
+                release();
             }
         }
     }

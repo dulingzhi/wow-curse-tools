@@ -25,34 +25,29 @@ export class AddonFlusher {
         gEnv.setEnv(env);
     }
 
-    flush(fileName: string) {
-        return new Promise((resolve, reject) => {
-            return Promise.resolve(
-                (async () => {
-                    try {
-                        for (const addon of this.project.addons) {
-                            for (const file of await findFiles(addon.folder, addon.name)) {
-                                let content;
-                                if (!file.noCompile) {
-                                    content = await gCompilerManager.compile(file.file);
-                                }
-
-                                if (content) {
-                                    this.zipFile.addBuffer(Buffer.from(content, 'utf-8'), file.relative);
-                                } else {
-                                    this.zipFile.addFile(file.file, file.relative);
-                                }
-                            }
-                        }
-
-                        this.zipFile.end();
-                        this.zipFile.outputStream.pipe(fs.createWriteStream(fileName)).on('close', () => resolve(true));
-                    } catch (error) {
-                        console.error(error);
-                        reject(error);
-                    }
-                })()
-            );
+    private async writeZip(zip: ZipFile, output: fs.WriteStream) {
+        return new Promise<void>((resolve) => {
+            zip.outputStream.pipe(output).on('close', () => resolve());
         });
+    }
+
+    async flush(fileName: string) {
+        for (const addon of this.project.addons) {
+            for (const file of await findFiles(addon.folder, addon.name)) {
+                let content;
+                if (!file.noCompile) {
+                    content = await gCompilerManager.compile(file.file);
+                }
+
+                if (content) {
+                    this.zipFile.addBuffer(Buffer.from(content, 'utf-8'), file.relative);
+                } else {
+                    this.zipFile.addFile(file.file, file.relative);
+                }
+            }
+        }
+
+        this.zipFile.end();
+        await this.writeZip(this.zipFile, fs.createWriteStream(fileName));
     }
 }

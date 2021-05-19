@@ -9,22 +9,23 @@ export interface BuildInfo {
     interface: string;
 }
 
-export interface CompilerEnv {
+export interface Env {
     buildId: string;
     buildInfo: BuildInfo;
     version: string;
     wowVersion: string;
     debug: boolean;
+    builds: string[];
 }
 
 class EnvManager {
-    private _env: CompilerEnv;
+    private _env: Env;
 
     get env() {
         return this._env;
     }
 
-    setEnv(env: CompilerEnv) {
+    setEnv(env: Env) {
         this._env = env;
     }
 }

@@ -7,7 +7,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { BuildInfo, CompilerEnv } from './env';
+import { BuildInfo, Env } from './env';
 import { findFiles } from './files';
 
 interface Addon {
@@ -41,7 +41,7 @@ export class Project implements Addon {
     private _folder: string;
     private _addons: Addon[] = [];
     private _localizations: Localization[] = [];
-    private _buildEnvs = new Map<string, CompilerEnv>();
+    private _buildEnvs = new Map<string, Env>();
 
     constructor(readonly debug = false) {}
 
@@ -132,12 +132,15 @@ export class Project implements Addon {
         }
 
         if (p.builds) {
+            const builds = Object.keys(p.builds);
+
             for (const [buildId, info] of Object.entries(p.builds)) {
                 const buildInfo: BuildInfo = typeof info === 'string' ? { interface: info } : info;
 
                 this._buildEnvs.set(buildId, {
                     buildId,
                     buildInfo,
+                    builds,
                     version: this._version,
                     debug: this.debug,
                     wowVersion: this.parseWowVersion(buildInfo.interface),
@@ -155,6 +158,7 @@ export class Project implements Addon {
                     version: this._version,
                     debug: this.debug,
                     wowVersion: this.parseWowVersion(m[1]),
+                    builds: [],
                 });
             }
         }

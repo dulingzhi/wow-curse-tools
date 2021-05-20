@@ -6,6 +6,7 @@
  */
 
 import * as path from 'path';
+import * as fs from 'fs-extra';
 import { gEnv } from '../env';
 
 export function isNeedRemoveNode(node: Element) {
@@ -40,4 +41,8 @@ export function isNeedRemoveNode(node: Element) {
 export function isListFile(filePath: string) {
     const ext = path.extname(filePath).toLowerCase();
     return ext === '.xml' || ext === '.toc';
+}
+
+export async function readFile(filePath: string) {
+    return (await fs.readFile(filePath, { encoding: 'utf-8' })).replace(/^\uFEFF/g, '');
 }

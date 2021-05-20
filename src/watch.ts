@@ -41,7 +41,7 @@ export class Watch {
 
         gEnv.setEnv(env);
 
-        const watcher = new Watcher(this.project.folder);
+        const watcher = new Watcher(this.project.folder, { recursive: true });
 
         setTimeout(() => {
             watcher

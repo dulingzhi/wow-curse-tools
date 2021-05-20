@@ -67,7 +67,7 @@ export class CodeFilesFinder {
         this._paths.add(path.resolve(filePath));
 
         if (!(await fs.pathExists(filePath))) {
-            if (!gEnv.env?.debug) {
+            if (gEnv.env && !gEnv.env.debug) {
                 throw Error(`not found file ${filePath}`);
             } else {
                 console.error(`not found file ${filePath}`);

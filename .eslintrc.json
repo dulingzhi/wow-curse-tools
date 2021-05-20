@@ -24,7 +24,6 @@
         "SwitchCase": 1
       }
     ],
-    "max-len": ["error", 120],
     "comma-dangle": [
       "error",
       {
@@ -35,20 +34,23 @@
         "functions": "never"
       }
     ],
-    "semi": ["error", "always"],
     "space-before-function-paren": [
       "error",
       {
-        "anonymous": "never",
+        "anonymous": "always",
         "named": "never",
         "asyncArrow": "always"
       }
     ],
-    "space-before-blocks": ["error", "always"],
-    "generator-star-spacing": ["error", { "before": false, "after": true }],
-    "no-unused-vars": "off",
     "no-useless-constructor": "off",
     "no-dupe-class-members": "off",
+    "no-control-regex": "off",
+    "no-unused-vars": "off",
+    "max-len": ["error", 120],
+    "semi": ["error", "always"],
+    "eqeqeq": ["error", "always"],
+    "space-before-blocks": ["error", "always"],
+    "generator-star-spacing": ["error", { "before": false, "after": true }],
     "@typescript-eslint/no-unused-vars": ["error"],
     "@typescript-eslint/no-require-imports": "error"
   }

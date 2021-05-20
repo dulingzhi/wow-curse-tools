@@ -11,7 +11,7 @@
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}\\src\\exec.ts",
       "cwd": "F:\\addons\\MeetingHorn",
-      "args": ["emmyui", "F:\\wow\\res.9.0.1\\interface\\framexml\\framexml.toc"],
+      "args": ["watch", "classic", "--output", "D:\\CMOP5\\_classic_era_\\Interface\\AddOns"],
       "preLaunchTask": "dev build",
       "outFiles": ["${workspaceFolder}/temp/**/*.js"]
     }

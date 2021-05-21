@@ -14,6 +14,7 @@ export class LuaCompiler implements Compiler {
         const m = new Map<string, boolean>([
             ['debug', gEnv.env.debug],
             ['release', !gEnv.env.debug],
+            ['import', true],
             ...gEnv.env.builds.map<[string, boolean]>((x) => [x, x === gEnv.env.buildId]),
         ]);
 

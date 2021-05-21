@@ -12,16 +12,20 @@ export class LuaCompiler implements Compiler {
     compile(code: string) {
         const eq = this.getCommentEqual(code);
         const m = new Map<string, boolean>([
-            ['debug', !gEnv.env.debug],
-            ['release', gEnv.env.debug],
-            ...gEnv.env.builds.map<[string, boolean]>((x) => [x, x !== gEnv.env.buildId]),
+            ['debug', gEnv.env.debug],
+            ['release', !gEnv.env.debug],
+            ...gEnv.env.builds.map<[string, boolean]>((x) => [x, x === gEnv.env.buildId]),
         ]);
 
+        const is = (x: string) => {
+            return m.has(x) && m.get(x);
+        };
+
         return code
-            .replace(/--\s*@(?<!end-|non-)(.+)@/g, (r, x) => (!m.has(x) || !m.get(x) ? r : `--[${eq}[@${x}@`))
-            .replace(/--\s*@end-(?<!non-)(.+)@/g, (r, x) => (!m.has(x) || !m.get(x) ? r : `--@end-${x}@]${eq}]`))
-            .replace(/--\[=*\[@non-(.+)@/g, (r, x) => (!m.has(x) || m.get(x) ? r : `--@non-${x}@`))
-            .replace(/--@end-non-(.+)@\]=*\]/g, (r, x) => (!m.has(x) || m.get(x) ? r : `--@end-non-${x}@`));
+            .replace(/--\s*@(?<!end-|non-)(\w+)@/g, (r, x) => (is(x) ? r : `--[${eq}[@${x}@`))
+            .replace(/--\s*@end-(?<!non-)(\w+)@/g, (r, x) => (is(x) ? r : `--@end-${x}@]${eq}]`))
+            .replace(/--\[=*\[@non-(\w+)@/g, (r, x) => (is(x) ? r : `--@non-${x}@`))
+            .replace(/--@end-non-(\w+)@\]=*\]/g, (r, x) => (is(x) ? r : `--@end-non-${x}@`));
     }
 
     protected getCommentEqual(code: string) {

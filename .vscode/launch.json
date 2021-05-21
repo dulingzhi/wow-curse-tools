@@ -10,8 +10,8 @@
       "name": "Launch Program",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}\\src\\exec.ts",
-      "cwd": "F:\\addons\\MeetingHorn",
-      "args": ["watch", "classic", "--output", "D:\\CMOP5\\_classic_era_\\Interface\\AddOns"],
+      "cwd": "F:\\addons\\tdBag2",
+      "args": ["package", "bcc"],
       "preLaunchTask": "dev build",
       "outFiles": ["${workspaceFolder}/temp/**/*.js"]
     }

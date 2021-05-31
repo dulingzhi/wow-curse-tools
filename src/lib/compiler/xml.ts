@@ -8,7 +8,7 @@
 import { DOMParser, XMLSerializer } from 'xmldom';
 import { Compiler } from './compiler';
 
-import { isNeedRemoveNode } from '../util';
+import { isNeedRemoveNode, isRemoveCondition } from '../util';
 
 export class XmlCompiler implements Compiler {
     compile(code: string) {
@@ -17,6 +17,29 @@ export class XmlCompiler implements Compiler {
         this.processNodes(doc.childNodes);
 
         return new XMLSerializer().serializeToString(doc);
+    }
+
+    processAttributes(node: Element) {
+        for (let i = 0; i < node.attributes.length; i++) {
+            const attr = node.attributes.item(i);
+            if (attr) {
+                const m = attr.name.match(/^build:(.+)/);
+                if (m) {
+                    const name = m[1];
+                    const m2 = attr.nodeValue?.match(/^@(.+)@(.+)$/);
+                    if (m2) {
+                        const condition = m2[1];
+                        const body = m2[2];
+
+                        if (!isRemoveCondition(condition)) {
+                            node.setAttribute(name, body);
+                        }
+                    }
+
+                    node.removeAttributeNode(attr);
+                }
+            }
+        }
     }
 
     processNodes(nodes: NodeListOf<ChildNode>) {
@@ -32,6 +55,8 @@ export class XmlCompiler implements Compiler {
                 if (isNeedRemoveNode(e)) {
                     node.parentNode?.removeChild(node);
                 } else {
+                    this.processAttributes(e);
+
                     e.removeAttribute('build');
                     this.processNodes(node.childNodes);
                 }

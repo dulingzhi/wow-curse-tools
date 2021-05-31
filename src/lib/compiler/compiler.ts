@@ -6,7 +6,7 @@
  */
 
 import * as path from 'path';
-import * as fs from 'fs-extra';
+import { readFile } from '../util';
 
 export interface Compiler {
     compile(code: string): string | undefined;
@@ -26,7 +26,7 @@ class CompilerManager {
         if (!compiler) {
             return;
         }
-        return compiler.compile(await fs.readFile(filePath, { encoding: 'utf-8' }));
+        return compiler.compile(await readFile(filePath));
     }
 }
 

@@ -5,7 +5,7 @@
  * @Date   : 5/6/2021, 5:48:39 PM
  */
 
-import { AddonFlusher } from './lib/addon';
+import { Flusher } from './lib/flusher';
 import { Project } from './lib/project';
 
 export class Package {
@@ -18,8 +18,8 @@ export class Package {
                 const fileName = project.genFileName(buildId);
                 console.log(`Creating package ${fileName} ...`);
 
-                const addon = new AddonFlusher(project, buildId);
-                await addon.flush(project.genFileName(buildId));
+                const flusher = new Flusher(project, buildId);
+                await flusher.flush(project.genFileName(buildId));
                 console.log(`Package ${fileName} done.`);
             }
         }

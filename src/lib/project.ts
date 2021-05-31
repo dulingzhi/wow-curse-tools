@@ -9,6 +9,7 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import { BuildInfo, Env } from './env';
 import { findFiles } from './files';
+import { readFile } from './util';
 
 interface Addon {
     name: string;
@@ -149,7 +150,7 @@ export class Project implements Addon {
         }
 
         if (this._buildEnvs.size === 0) {
-            const toc = await fs.readFile(`./${pkg.wow.name}.toc`, { encoding: 'utf-8' });
+            const toc = await readFile(`./${pkg.wow.name}.toc`);
             const m = toc.match(/##\s*Interface\s*:\s*(\d+)/);
             if (m) {
                 this._buildEnvs.set('none', {

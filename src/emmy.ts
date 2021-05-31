@@ -39,20 +39,43 @@ class ElementFinder {
     get children() {
         return [...pairs(this.element)].map((e) => new ElementFinder(e));
     }
+
+    tag(tagName: string) {
+        const tags = this.tags(tagName);
+        return tags.length > 0 ? tags[0] : undefined;
+    }
 }
 
-class Frame {
+interface Field {
+    parent?: Field;
+    parentKey?: string;
+    inherits: string[];
+}
+
+class BaseType implements Field {
+    parentKey: string;
+    inherits: string[] = [];
+
+    constructor(e: Element, readonly parent?: UiObject) {
+        const type = e.getAttribute('type') as string;
+        this.parentKey = e.getAttribute('key') as string;
+        this.inherits.push(type === 'global' ? 'table' : type);
+    }
+}
+
+class UiObject implements Field {
     readonly name?: string;
     readonly parentKey?: string;
     readonly virtual: boolean;
 
     readonly inherits: string[] = [];
-    readonly fields: Frame[] = [];
+    readonly fields: UiObject[] = [];
+    readonly keyValues: BaseType[] = [];
 
-    constructor(e: Element, readonly parent?: Frame, isLayer = false) {
-        this.name = e.getAttribute('name') || undefined;
+    constructor(e: Element, readonly parent?: UiObject, isLayer = false) {
+        this.name = e.getAttribute('name')?.replace(/[^\w]/g, '_') || undefined;
         this.parentKey = e.getAttribute('parentKey') || undefined;
-        this.virtual = e.getAttribute('virtual') === 'true';
+        this.virtual = e.getAttribute('virtual') === 'true' || e.getAttribute('intrinsic') === 'true';
 
         if (this.name?.startsWith('$parent') && this.parent?.name) {
             this.name = this.name.replace(/^\$parent/g, this.parent.name);
@@ -62,17 +85,21 @@ class Frame {
 
         if (!isLayer) {
             this.inherits.push(
-                ...['inherits', 'mixin']
+                ...['inherits', 'mixin', 'secureMixin']
                     .map(
                         (k) =>
                             e
                                 .getAttribute(k)
-                                ?.split(/ ,/g)
-                                .map((x) => x.trim())
+                                ?.split(/ |,/)
+                                .map((x) => x.trim().replace(/[^\w]/g, '_'))
                                 .filter((x) => x !== '') ?? []
                     )
                     .flat()
             );
+
+            if (!e.getAttribute('inherits')) {
+                this.inherits.push(e.tagName);
+            }
 
             if (this.inherits.length === 0) {
                 this.inherits.push(e.tagName);
@@ -85,21 +112,25 @@ class Frame {
 
         this.fields.push(
             ...(elementFinder
-                .tags('Layers')[0]
+                .tag('Layers')
                 ?.tags('Layer')
                 .map((f) =>
                     f.children
                         .filter((f) => f.element.getAttribute('parentKey'))
-                        .map((f) => new Frame(f.element, this, true))
+                        .map((f) => new UiObject(f.element, this, true))
                 )
                 .flat() ?? [])
         );
 
         this.fields.push(
             ...(elementFinder
-                .tags('Frames')[0]
+                .tag('Frames')
                 ?.children.filter((f) => f.element.getAttribute('parentKey'))
-                .map((f) => new Frame(f.element, this)) ?? [])
+                .map((f) => new UiObject(f.element, this)) ?? [])
+        );
+
+        this.keyValues.push(
+            ...(elementFinder.tag('KeyValues')?.children.map((x) => new BaseType(x.element, this)) ?? [])
         );
     }
 
@@ -108,7 +139,7 @@ class Frame {
     }
 
     isContainer() {
-        return this.fields.length > 0;
+        return this.fields.length > 0 || this.keyValues.length > 0;
     }
 
     isGlobal() {
@@ -128,7 +159,7 @@ class Frame {
             this.name ??
             (() => {
                 const r = [];
-                let parent: Frame | undefined = this;
+                let parent: UiObject | undefined = this;
                 while (parent) {
                     r.push(parent.parentKey || parent.name);
 
@@ -141,7 +172,7 @@ class Frame {
     }
 }
 
-export class EmmyUI {
+export class Emmy {
     async run(filePath?: string) {
         let files: File[];
         if (!filePath) {
@@ -159,19 +190,19 @@ export class EmmyUI {
 
         for (const file of files) {
             const ext = path.extname(file.path).toLowerCase();
-            if (ext === '.xml') {
-                try {
-                    await this.processFile(file);
-                } catch (error) {
-                    console.error(error);
+            try {
+                if (ext === '.xml') {
+                    await this.processXmlFile(file);
+                } else if (ext === '.lua') {
+                    await this.processLuaFile(file);
                 }
-            } else if (ext === '.lua') {
-                this.processLuaFile(file);
+            } catch (error) {
+                console.error(error);
             }
         }
     }
 
-    processFrame(frame: Frame, out: string[]) {
+    processFrame(frame: UiObject, out: string[]) {
         for (const field of frame.fields) {
             this.processFrame(field, out);
         }
@@ -185,6 +216,9 @@ export class EmmyUI {
 
             for (const field of frame.fields) {
                 out.push(`---@field ${field.parentKey} ${field.resolveClassName()}`);
+            }
+            for (const kv of frame.keyValues) {
+                out.push(`---@field ${kv.parentKey} ${kv.inherits.join()}`);
             }
         } else if (frame.isGlobal()) {
             out.push(`---@type ${frame.inherits.join(' | ')}`);
@@ -206,12 +240,12 @@ export class EmmyUI {
             if (e.tagName === 'ScopedModifier') {
                 this.processDocument(e, out);
             } else if (!GLOBAL_INGORES.has(e.tagName)) {
-                this.processFrame(new Frame(e), out);
+                this.processFrame(new UiObject(e), out);
             }
         }
     }
 
-    async processFile(file: File) {
+    async processXmlFile(file: File) {
         const doc = new DOMParser().parseFromString(await readFile(file.path));
         const ui = doc.getElementsByTagName('Ui')?.[0];
 
@@ -222,26 +256,63 @@ export class EmmyUI {
         this.processDocument(ui, out);
 
         if (out.length > 0) {
-            const filePath = path.resolve('.ui', file.relative + '.lua');
+            const filePath = path.resolve('.emmy/ui', path.basename(file.relative, '.xml') + '.lua');
 
-            await fs.mkdirp(path.dirname(filePath));
-            await fs.writeFile(filePath, out.join('\n'));
+            await this.writeFile(filePath, out);
+        }
+    }
+
+    processBody(body: luaparse.Statement[], out: string[]) {
+        for (const node of body) {
+            if (node.type === 'AssignmentStatement') {
+                // todo:
+            } else if (node.type === 'FunctionDeclaration') {
+                if (!node.isLocal && node.identifier) {
+                    const identifier = node.identifier;
+
+                    if (identifier.type === 'Identifier') {
+                        const name = identifier.name;
+                        const args = node.parameters.map((x) => (x.type === 'Identifier' ? x.name : '...')).join(', ');
+                        out.push(`function ${name}(${args}) end`);
+                    } else if (identifier.type === 'MemberExpression') {
+                        if (identifier.base.type !== 'Identifier' || identifier.identifier.type !== 'Identifier') {
+                            throw Error('');
+                        }
+
+                        console.log(identifier.base.name);
+
+                        const name = `${identifier.base.name}${identifier.indexer}${identifier.identifier.name}`;
+                        const args = node.parameters.map((x) => (x.type === 'Identifier' ? x.name : '...')).join(', ');
+                        out.push(`function ${name}(${args}) end`);
+                    }
+                }
+            } else if (node.type === 'DoStatement') {
+                this.processBody(node.body, out);
+            }
         }
     }
 
     async processLuaFile(file: File) {
         try {
             const code = (await readFile(file.path)).replace(/break;/g, 'break');
-            const ast = luaparse.parse(code, { luaVersion: '5.1' });
+            const ast = luaparse.parse(code, { luaVersion: '5.1', scope: true, locations: true, ranges: true });
 
-            for (const node of ast.body) {
-                if (node.type === 'AssignmentStatement') {
-                    // console.log(node.variables.length);
-                    console.log(node.variables[0].type);
-                }
+            const out: string[] = [];
+
+            this.processBody(ast.body, out);
+
+            if (out.length > 0) {
+                const filePath = path.resolve('.emmy/lua', file.relative);
+
+                await this.writeFile(filePath, out);
             }
         } catch (error) {
             console.error(`${file.path} ${error}`);
         }
+    }
+
+    async writeFile(filePath: string, out: string[]) {
+        await fs.mkdirp(path.dirname(filePath));
+        await fs.writeFile(filePath, out.join('\n'));
     }
 }

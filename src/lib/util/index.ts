@@ -9,12 +9,8 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import { gEnv } from '../env';
 
-export function isNeedRemoveNode(node: Element) {
-    const builds = node
-        .getAttribute('build')
-        ?.split(',')
-        .filter((x) => x !== '');
-
+export function isRemoveCondition(text: string) {
+    const builds = text.split(',').filter((x) => x !== '');
     if (!builds || builds.length === 0) {
         return false;
     }
@@ -38,6 +34,11 @@ export function isNeedRemoveNode(node: Element) {
     return true;
 }
 
+export function isNeedRemoveNode(node: Element) {
+    const build = node.getAttribute('build');
+    return build ? isRemoveCondition(build) : false;
+}
+
 export function isListFile(filePath: string) {
     const ext = path.extname(filePath).toLowerCase();
     return ext === '.xml' || ext === '.toc';
@@ -45,4 +46,24 @@ export function isListFile(filePath: string) {
 
 export async function readFile(filePath: string) {
     return (await fs.readFile(filePath, { encoding: 'utf-8' })).replace(/^\uFEFF/g, '');
+}
+
+export async function writeFile(filePath: string, data: string) {
+    if ((await fs.pathExists(filePath)) && (await readFile(filePath)) === data) {
+        return false;
+    }
+    await fs.writeFile(filePath, data);
+    return true;
+}
+
+export async function copyFile(filePath: string, targetPath: string) {
+    if (
+        (await fs.pathExists(filePath)) &&
+        (await fs.pathExists(targetPath)) &&
+        Buffer.compare(await fs.readFile(targetPath), await fs.readFile(filePath)) === 0
+    ) {
+        return false;
+    }
+    await fs.copyFile(filePath, targetPath);
+    return true;
 }

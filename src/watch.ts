@@ -14,7 +14,7 @@ import { Project } from './lib/project';
 import { File, findFiles } from './lib/files';
 import { gCompilerManager } from './lib/compiler';
 import { gEnv } from './lib/env';
-import { isListFile } from './lib/util';
+import { copyFile, isListFile, writeFile } from './lib/util';
 import { Mutex } from 'async-mutex';
 
 export class Watch {
@@ -23,12 +23,22 @@ export class Watch {
     private project = new Project(true);
     private mutex = new Mutex();
 
-    async run(output: string, buildId?: string) {
-        this.output = output;
+    async run(output: string | undefined, buildId: string = 'none') {
+        if (output) {
+            this.output = output;
+        } else {
+            try {
+                const cfg = await fs.readJson('./.vscode/wct.json');
+
+                this.output = path.resolve(cfg.builds[buildId].wowPath, 'Interface/AddOns');
+            } catch (error) {}
+        }
+
+        if (!this.output) {
+            throw Error('Unknown output path');
+        }
 
         await this.project.init();
-        console.log(path.resolve(this.output, this.project.name));
-        console.log(this.project.folder);
 
         if (path.resolve(this.output, this.project.name).toLowerCase() === this.project.folder.toLowerCase()) {
             throw Error('code folder is same as output folder');
@@ -36,7 +46,7 @@ export class Watch {
 
         const env = this.project.buildEnvs.get(buildId || 'none');
         if (!env) {
-            throw Error('');
+            throw Error('error build');
         }
 
         gEnv.setEnv(env);
@@ -55,23 +65,17 @@ export class Watch {
 
     private async refresh() {
         try {
-            const files = new Map(
-                (await findFiles(this.project.folder, this.project.name)).map((file) => [file.path, file])
+            const files = (
+                await Promise.all(this.project.addons.map((addon) => findFiles(addon.folder, addon.name)))
+            ).flat();
+            const filesMap = new Map(files.map((file) => [file.path, file]));
+
+            await Promise.all(files.filter((file) => !this.files.has(file.path)).map((file) => this.compileFile(file)));
+            await Promise.all(
+                [...this.files.values()].filter((file) => !filesMap.has(file.path)).map((file) => this.removeFile(file))
             );
 
-            for (const file of files.values()) {
-                if (!this.files.has(file.path)) {
-                    await this.compileFile(file);
-                }
-            }
-
-            for (const file of this.files.values()) {
-                if (!files.has(file.path)) {
-                    await this.removeFile(file);
-                }
-            }
-
-            this.files = files;
+            this.files = filesMap;
         } catch (error) {
             console.error(error);
         }
@@ -91,13 +95,11 @@ export class Watch {
 
         await fs.mkdirp(path.dirname(targetFile));
 
-        if (content) {
-            await fs.writeFile(targetFile, content);
+        if (content ? await writeFile(targetFile, content) : await copyFile(file.path, targetFile)) {
+            console.log(`compile file: ${targetFile}`);
         } else {
-            await fs.copyFile(file.path, targetFile);
+            console.log(`ignore file: ${targetFile}`);
         }
-
-        console.log(`compile file: ${targetFile}`);
     }
 
     private async removeFile(file: File) {

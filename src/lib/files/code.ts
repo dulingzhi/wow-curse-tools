@@ -9,7 +9,7 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 
 import { DOMParser } from 'xmldom';
-import { isNeedRemoveNode } from '../util';
+import { isNeedRemoveNode, readFile } from '../util';
 import { gEnv } from '../env';
 
 export class CodeFilesFinder {
@@ -20,7 +20,7 @@ export class CodeFilesFinder {
     }
 
     private async parseToc(filePath: string) {
-        const content = await fs.readFile(filePath, { encoding: 'utf-8' });
+        const content = await readFile(filePath);
         const folder = path.dirname(path.resolve(filePath));
 
         for (let line of content.split(/[\r\n]+/)) {
@@ -46,7 +46,7 @@ export class CodeFilesFinder {
             }
         };
 
-        const content = await fs.readFile(filePath, { encoding: 'utf-8' });
+        const content = await readFile(filePath);
         const doc = new DOMParser().parseFromString(content);
         const ui = doc.getElementsByTagName('Ui');
 

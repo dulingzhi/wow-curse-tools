@@ -10,8 +10,11 @@
       "name": "Launch Program",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}\\src\\exec.ts",
-      "cwd": "F:\\addons\\tdBag2",
-      "args": ["package", "bcc"],
+      "cwd": "${workspaceFolder}",
+      // "cwd": "D:\\AddOns\\tdBag2_Glass",
+      // "console": "externalTerminal",
+      // "args": ["watch", "bcc", "-O", "D:\\Games\\World of Warcraft\\_classic_\\Interface\\Addons"],
+      "args": ["emmyui", "E:\\wow\\2.5.1.38707\\interface\\FrameXML\\FrameXML.toc"],
       "preLaunchTask": "dev build",
       "outFiles": ["${workspaceFolder}/temp/**/*.js"]
     }

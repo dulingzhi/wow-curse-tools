@@ -14,7 +14,7 @@ import { gCompilerManager } from './compiler';
 import { gEnv } from './env';
 import { findFiles } from './files';
 
-export class AddonFlusher {
+export class Flusher {
     private zipFile = new ZipFile();
 
     constructor(private project: Project, buildId: string) {

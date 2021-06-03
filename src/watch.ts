@@ -29,9 +29,8 @@ export class Watch {
             this.output = output;
         } else {
             try {
-                const cfg = await fs.readJson(`${os.homedir()}/.wct.json`);
-
-                this.output = path.resolve(cfg.builds[buildId].wowPath, 'Interface/AddOns');
+                const cfg = await fs.readJson(path.resolve(os.homedir(), '.wct.json'));
+                this.output = path.resolve(cfg.buildPath[buildId], 'Interface/AddOns');
             } catch (error) {}
         }
 

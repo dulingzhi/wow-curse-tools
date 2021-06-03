@@ -1,21 +1,13 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"type": "shell",
-			"windows": {
-				"command": "${workspaceFolder}\\node_modules\\.bin\\tsc",
-				"args": [
-					// "--watch",
-					"--outDir",
-					"temp"
-				]
-			},
-			"problemMatcher": [
-				"$tsc"
-			],
-			"group": "build",
-			"label": "dev build"
-		}
-	]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "watch",
+      "isBackground": true,
+      "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"],
+      "group": "build",
+      "label": "webpack: watch"
+    }
+  ]
 }

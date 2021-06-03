@@ -9,14 +9,14 @@
       "request": "launch",
       "name": "Launch Program",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}\\src\\exec.ts",
+      "program": "${workspaceFolder}\\dist\\exec.js",
       "cwd": "${workspaceFolder}",
       // "cwd": "D:\\AddOns\\tdBag2_Glass",
-      // "console": "externalTerminal",
+      "console": "externalTerminal",
       // "args": ["watch", "bcc", "-O", "D:\\Games\\World of Warcraft\\_classic_\\Interface\\Addons"],
-      "args": ["emmyui", "E:\\wow\\2.5.1.38707\\interface\\FrameXML\\FrameXML.toc"],
-      "preLaunchTask": "dev build",
-      "outFiles": ["${workspaceFolder}/temp/**/*.js"]
+      "args": ["config"],
+      "preLaunchTask": "webpack: watch",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
     }
   ]
 }

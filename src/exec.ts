@@ -58,6 +58,13 @@ class App {
                 await new (await import('./emmy')).Emmy().run(toc);
             });
 
+        program
+            .command('config')
+            .description('config wct')
+            .action(async () => {
+                await new (await import('./config')).Config().run();
+            });
+
         program.parse(process.argv);
     }
 }

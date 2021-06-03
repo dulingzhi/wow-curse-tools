@@ -5,6 +5,7 @@
  * @Date   : 5/17/2021, 11:01:25 AM
  */
 
+import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 
@@ -28,7 +29,7 @@ export class Watch {
             this.output = output;
         } else {
             try {
-                const cfg = await fs.readJson('./.vscode/wct.json');
+                const cfg = await fs.readJson(`${os.homedir()}/.wct.json`);
 
                 this.output = path.resolve(cfg.builds[buildId].wowPath, 'Interface/AddOns');
             } catch (error) {}

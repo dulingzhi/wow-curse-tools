@@ -14,6 +14,7 @@ import { DOMParser } from 'xmldom';
 import { File, findFiles } from './lib/files';
 import { Project } from './lib/project';
 import { readFile } from './lib/util';
+import { Identifier } from 'luaparse';
 
 const GLOBAL_INGORES = new Set(['Font', 'FontString', 'FontFamily', 'Texture', 'Script', 'Include']);
 
@@ -263,6 +264,7 @@ export class Emmy {
     }
 
     processBody(body: luaparse.Statement[], out: string[]) {
+        const classes = new Set<string>();
         for (const node of body) {
             if (node.type === 'AssignmentStatement') {
                 // todo:
@@ -279,6 +281,8 @@ export class Emmy {
                             throw Error('');
                         }
 
+                        classes.add(identifier.base.name);
+
                         console.log(identifier.base.name);
 
                         const name = `${identifier.base.name}${identifier.indexer}${identifier.identifier.name}`;
@@ -287,9 +291,14 @@ export class Emmy {
                     }
                 }
             } else if (node.type === 'DoStatement') {
-                this.processBody(node.body, out);
+                const r = this.processBody(node.body, out);
+
+                for (const rr of r) {
+                    classes.add(rr);
+                }
             }
         }
+        return classes;
     }
 
     async processLuaFile(file: File) {
@@ -297,22 +306,27 @@ export class Emmy {
             const code = (await readFile(file.path)).replace(/break;/g, 'break');
             const ast = luaparse.parse(code, { luaVersion: '5.1', scope: true, locations: true, ranges: true });
 
-            const out: string[] = [];
+            let out: string[] = [];
 
-            this.processBody(ast.body, out);
+            const classes = this.processBody(ast.body, out);
+            const globals = (((ast as unknown) as any).globals as Identifier[])
+                .filter((x) => classes.has(x.name))
+                .map((x) => `---@class ${x.name}\n${x.name} = {}`);
+
+            out = [...globals, ...out];
 
             if (out.length > 0) {
                 const filePath = path.resolve('.emmy/lua', file.relative);
 
-                await this.writeFile(filePath, out);
+                await this.writeFile(filePath, out, '\n\n');
             }
         } catch (error) {
             console.error(`${file.path} ${error}`);
         }
     }
 
-    async writeFile(filePath: string, out: string[]) {
+    async writeFile(filePath: string, out: string[], sep = '\n') {
         await fs.mkdirp(path.dirname(filePath));
-        await fs.writeFile(filePath, out.join('\n'));
+        await fs.writeFile(filePath, out.join(sep));
     }
 }

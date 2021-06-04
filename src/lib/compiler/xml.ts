@@ -8,7 +8,8 @@
 import { DOMParser, XMLSerializer } from 'xmldom';
 import { Compiler } from './compiler';
 
-import { isNeedRemoveNode, isRemoveCondition } from '../util';
+import { isNeedRemoveNode } from '../util';
+import { gEnv } from '../env';
 
 export class XmlCompiler implements Compiler {
     compile(code: string) {
@@ -24,15 +25,14 @@ export class XmlCompiler implements Compiler {
             const attr = node.attributes.item(i);
             if (attr) {
                 const m = attr.name.match(/^build:(.+)/);
-                if (m) {
+                if (m && attr.nodeValue) {
                     const name = m[1];
-                    const m2 = attr.nodeValue?.match(/^@(.+)@(.+)$/);
-                    if (m2) {
-                        const condition = m2[1];
-                        const body = m2[2];
+                    const reg = /(non-)?([^()\- ]+)\(([^() ]+)\)/g;
 
-                        if (!isRemoveCondition(condition)) {
-                            node.setAttribute(name, body);
+                    for (const [, non, buildId, content] of attr.nodeValue.matchAll(reg)) {
+                        if ((!non && gEnv.checkCondition(buildId)) || (non && !gEnv.checkCondition(buildId))) {
+                            node.setAttribute(name, content);
+                            break;
                         }
                     }
 

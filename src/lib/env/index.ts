@@ -20,6 +20,7 @@ export interface Env {
 
 class EnvManager {
     private _env: Env;
+    private _conditions?: Map<string, boolean>;
 
     get env() {
         return this._env;
@@ -27,6 +28,16 @@ class EnvManager {
 
     setEnv(env: Env) {
         this._env = env;
+        this._conditions = new Map<string, boolean>([
+            ['debug', env.debug],
+            ['release', !env.debug],
+            ['import', true],
+            ...env.builds.map<[string, boolean]>((x) => [x, x === env.buildId]),
+        ]);
+    }
+
+    checkCondition(condition: string) {
+        return this._conditions?.has(condition) && this._conditions.get(condition);
     }
 }
 

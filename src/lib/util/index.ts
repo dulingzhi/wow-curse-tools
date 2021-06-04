@@ -15,7 +15,7 @@ export function isRemoveCondition(text: string) {
         return false;
     }
 
-    const not = builds.filter((x) => x.startsWith('!')).map((x) => x.substr(1));
+    const not = builds.filter((x) => x.startsWith('non-')).map((x) => x.substr(4));
     if (not.length > 0) {
         if (not.length > 1 || not.length !== builds.length) {
             throw Error('xml build error');
@@ -23,7 +23,7 @@ export function isRemoveCondition(text: string) {
         return gEnv.env.buildId === not[0];
     }
 
-    const or = builds.filter((x) => !x.startsWith('!'));
+    const or = builds.filter((x) => !x.startsWith('non-'));
     if (or.length === 0) {
         throw Error('bang');
     }

@@ -10,11 +10,10 @@
       "name": "Launch Program",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}\\dist\\exec.js",
-      "cwd": "${workspaceFolder}",
-      // "cwd": "D:\\AddOns\\tdBag2_Glass",
-      "console": "externalTerminal",
-      // "args": ["watch", "bcc", "-O", "D:\\Games\\World of Warcraft\\_classic_\\Interface\\Addons"],
-      "args": ["config"],
+      // "cwd": "${workspaceFolder}",
+      "cwd": "D:\\AddOns\\tdBag2_Glass",
+      // "console": "externalTerminal",
+      "args": ["watch", "classic"],
       "preLaunchTask": "webpack: watch",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"]
     }

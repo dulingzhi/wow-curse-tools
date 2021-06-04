@@ -42,12 +42,21 @@ class App {
             });
 
         program
+            .command('build')
+            .arguments('[build]')
+            .option('-O --output <output>')
+            .description('watch the addon')
+            .action(async (buildId: string, opts) => {
+                await new (await import('./build')).Build().run(opts.output, buildId);
+            });
+
+        program
             .command('watch')
             .arguments('[build]')
             .option('-O --output <output>')
             .description('watch the addon')
             .action(async (buildId: string, opts) => {
-                await new (await import('./watch')).Watch().run(opts.output, buildId);
+                await new (await import('./build')).Build(true).run(opts.output, buildId);
             });
 
         program

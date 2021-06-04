@@ -18,11 +18,13 @@ import { gEnv } from './lib/env';
 import { copyFile, isListFile, writeFile } from './lib/util';
 import { Mutex } from 'async-mutex';
 
-export class Watch {
+export class Build {
     private output: string;
     private files = new Map<string, File>();
     private project = new Project(true);
     private mutex = new Mutex();
+
+    constructor(private watch = false) {}
 
     async run(output: string | undefined, buildId: string = 'none') {
         if (output) {
@@ -51,14 +53,16 @@ export class Watch {
 
         gEnv.setEnv(env);
 
-        const watcher = new Watcher(this.project.folder, { recursive: true });
+        if (this.watch) {
+            const watcher = new Watcher(this.project.folder, { recursive: true });
 
-        setTimeout(() => {
-            watcher
-                .on('add', (filePath: string) => this.onFileChanged(filePath))
-                .on('change', (filePath: string) => this.onFileChanged(filePath))
-                .on('unlink', (filePath: string) => this.onFileUnlink(filePath));
-        }, 1000);
+            setTimeout(() => {
+                watcher
+                    .on('add', (filePath: string) => this.onFileChanged(filePath))
+                    .on('change', (filePath: string) => this.onFileChanged(filePath))
+                    .on('unlink', (filePath: string) => this.onFileUnlink(filePath));
+            }, 1000);
+        }
 
         this.refresh();
     }
@@ -96,9 +100,9 @@ export class Watch {
         await fs.mkdirp(path.dirname(targetFile));
 
         if (content ? await writeFile(targetFile, content) : await copyFile(file.path, targetFile)) {
-            console.log(`compile file: ${targetFile}`);
+            console.log(`compile file: "${targetFile}"`);
         } else {
-            console.log(`ignore file: ${targetFile}`);
+            console.log(`ignore file: "${targetFile}"`);
         }
     }
 

@@ -7,7 +7,7 @@
       "isBackground": true,
       "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"],
       "group": "build",
-      "label": "webpack: watch"
+      "label": "webpack: watch",
     }
   ]
 }

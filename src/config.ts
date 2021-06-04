@@ -10,6 +10,7 @@ import * as fs from 'fs-extra';
 import * as inquirer from 'inquirer';
 
 enum WhichConfig {
+    None,
     BuildPath,
 }
 
@@ -19,13 +20,20 @@ export class Config {
             {
                 type: 'list',
                 name: 'which',
-                choices: [{ type: 'choice', value: WhichConfig.BuildPath, name: 'Set watch path for build id' }],
+                message: 'Which config to set?',
+                choices: [
+                    { type: 'choice', value: WhichConfig.BuildPath, name: 'Set watch path for build id' },
+                    { type: 'separator' },
+                    { type: 'choice', value: WhichConfig.None, name: 'Quit' },
+                ],
             },
         ]);
 
         switch (opts.which as WhichConfig) {
             case WhichConfig.BuildPath:
                 await this.buildPath();
+                break;
+            default:
                 break;
         }
     }

@@ -204,24 +204,37 @@ class UiObject implements Field {
 }
 
 export class Emmy {
-    isBlizzard: boolean;
+    constructor(private isBlizzard?: boolean) {}
 
-    async run(filePath?: string) {
-        this.isBlizzard = !!filePath;
+    async run() {
+        let files: File[] = [];
 
-        let files: File[];
-        if (!filePath) {
+        if (this.isBlizzard) {
+            if (!(await fs.pathExists('Interface/FrameXML/FrameXML.toc'))) {
+                throw Error('error folder');
+            }
+            files = (
+                await Promise.all(
+                    [
+                        'Interface/FrameXML/FrameXML.toc',
+                        ...(
+                            await fs.readdir('Interface/AddOns')
+                        ).map((x) => path.join('Interface/AddOns', x, x + '.toc')),
+                    ].map(async (x) => {
+                        if (fs.pathExists(x)) {
+                            const folder = path.dirname(x);
+                            const name = path.basename(x, '.toc');
+                            return await findFiles(folder, name);
+                        }
+                        return [];
+                    })
+                )
+            ).flat();
+        } else {
             const project = new Project(true);
             await project.init();
             gEnv.setEnv(project.buildEnvs.values().next().value);
             files = await project.findFiles();
-        } else {
-            if (path.extname(filePath).toLowerCase() !== '.toc') {
-                throw Error('need toc file');
-            }
-            const folder = path.dirname(filePath);
-            const name = path.basename(filePath, '.toc');
-            files = await findFiles(folder, name);
         }
 
         for (const file of files) {
@@ -281,6 +294,12 @@ export class Emmy {
         }
     }
 
+    resolveFile(filePath: string, folder: string) {
+        const p = path.resolve('.emmy', folder, path.relative('Interface', filePath));
+
+        return path.join(path.dirname(p), path.basename(p, path.extname(p)) + '.lua');
+    }
+
     async processXmlFile(file: File) {
         const doc = new DOMParser().parseFromString(await readFile(file.path));
         const ui = doc.getElementsByTagName('Ui')?.[0];
@@ -292,8 +311,7 @@ export class Emmy {
         this.processDocument(ui, out);
 
         if (out.length > 0) {
-            const filePath = path.resolve('.emmy/ui', path.basename(file.relative, '.xml') + '.lua');
-
+            const filePath = this.resolveFile(file.path, 'ui');
             await this.writeFile(filePath, out);
         }
     }
@@ -357,7 +375,7 @@ export class Emmy {
             let out: string[] = [];
 
             const [classes, supers] = this.processBody(ast.body, out);
-            const globals = (((ast as unknown) as any).globals as Identifier[])
+            const globals = ((ast as unknown as any).globals as Identifier[])
                 .filter((x) => classes.has(x.name))
                 .map((x) => {
                     const supr = supers.get(x.name);
@@ -375,7 +393,8 @@ export class Emmy {
             out = [...globals, ...out];
 
             if (out.length > 0) {
-                const filePath = path.resolve('.emmy/lua', file.relative);
+                // const filePath = path.resolve('.emmy/lua', file.relative);
+                const filePath = this.resolveFile(file.path, 'lua');
 
                 await this.writeFile(filePath, out, '\n\n');
             }

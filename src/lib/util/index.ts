@@ -10,7 +10,10 @@ import * as fs from 'fs-extra';
 import { gEnv } from '../env';
 
 export function isRemoveCondition(text: string) {
-    const builds = text.split(',').filter((x) => x !== '');
+    const builds = text
+        .split(',')
+        .map((x) => x.trim())
+        .filter((x) => x !== '');
     if (!builds || builds.length === 0) {
         return false;
     }
@@ -20,7 +23,7 @@ export function isRemoveCondition(text: string) {
         if (not.length > 1 || not.length !== builds.length) {
             throw Error('xml build error');
         }
-        return gEnv.env.buildId === not[0];
+        return gEnv.checkCondition(not[0]);
     }
 
     const or = builds.filter((x) => !x.startsWith('non-'));
@@ -28,8 +31,10 @@ export function isRemoveCondition(text: string) {
         throw Error('bang');
     }
 
-    if (or.includes(gEnv.env.buildId)) {
-        return false;
+    for (const condition of or) {
+        if (gEnv.checkCondition(condition)) {
+            return false;
+        }
     }
     return true;
 }

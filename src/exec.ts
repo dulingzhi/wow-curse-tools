@@ -35,10 +35,9 @@ class App {
             .arguments('[builds...]')
             .description('Publish your addon.')
             .action(async (args: string[], opts) => {
-                await new (await import('./publish')).Publish().run(
-                    opts.token || process.env.CURSE_TOKEN,
-                    this.optList(args)
-                );
+                await new (
+                    await import('./publish')
+                ).Publish().run(opts.token || process.env.CURSE_TOKEN, this.optList(args));
             });
 
         program
@@ -55,16 +54,16 @@ class App {
             .arguments('[build]')
             .option('-O --output <output>')
             .description('watch the addon')
-            .action(async (buildId: string, opts) => {
+            .action(async (buildId: string, opts: { output?: string }) => {
                 await new (await import('./build')).Build(true).run(opts.output, buildId);
             });
 
         program
             .command('emmyui')
-            .arguments('[toc]')
+            .option('--blizzard')
             .description('gen ui')
-            .action(async (toc: string) => {
-                await new (await import('./emmy')).Emmy().run(toc);
+            .action(async (opts: { blizzard?: boolean }) => {
+                await new (await import('./emmy')).Emmy(opts.blizzard).run();
             });
 
         program

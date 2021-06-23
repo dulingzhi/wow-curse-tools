@@ -48,6 +48,11 @@ export class CodeFilesFinder {
 
         const content = await readFile(filePath);
         const doc = new DOMParser().parseFromString(content);
+
+        if (doc.getElementsByTagName('Bindings').length > 0) {
+            return;
+        }
+
         const ui = doc.getElementsByTagName('Ui');
 
         if (ui.length !== 1) {

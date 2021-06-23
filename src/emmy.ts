@@ -15,6 +15,7 @@ import { File, findFiles } from './lib/files';
 import { Project } from './lib/project';
 import { readFile } from './lib/util';
 import { Identifier } from 'luaparse';
+import { gEnv } from './lib/env';
 
 const GLOBAL_INGORES = new Set(['Font', 'FontString', 'FontFamily', 'Texture', 'Script', 'Include']);
 
@@ -73,10 +74,15 @@ class UiObject implements Field {
     readonly fields: UiObject[] = [];
     readonly keyValues: BaseType[] = [];
 
-    constructor(e: Element, readonly parent?: UiObject, isLayer = false) {
+    private f: ElementFinder;
+
+    constructor(e: Element, readonly parent?: UiObject, isLayer = false, overrideTagName?: string) {
+        this.f = new ElementFinder(e);
         this.name = e.getAttribute('name')?.replace(/[^\w]/g, '_') || undefined;
         this.parentKey = e.getAttribute('parentKey') || undefined;
         this.virtual = e.getAttribute('virtual') === 'true' || e.getAttribute('intrinsic') === 'true';
+
+        const tagName = overrideTagName || e.tagName;
 
         if (this.name?.startsWith('$parent') && this.parent?.name) {
             this.name = this.name.replace(/^\$parent/g, this.parent.name);
@@ -99,40 +105,28 @@ class UiObject implements Field {
             );
 
             if (!e.getAttribute('inherits')) {
-                this.inherits.push(e.tagName);
+                this.inherits.push(tagName);
             }
 
-            if (this.inherits.length === 0) {
-                this.inherits.push(e.tagName);
-            }
+            this.inherits.push(tagName);
         } else {
-            this.inherits.push(e.tagName);
+            this.inherits.push(tagName);
         }
 
-        const elementFinder = new ElementFinder(e);
+        this.inherits = [...new Set(this.inherits)];
 
-        this.fields.push(
-            ...(elementFinder
-                .tag('Layers')
-                ?.tags('Layer')
-                .map((f) =>
-                    f.children
-                        .filter((f) => f.element.getAttribute('parentKey'))
-                        .map((f) => new UiObject(f.element, this, true))
-                )
-                .flat() ?? [])
-        );
+        this.processLayers();
+        this.processFrames('Frames');
+        this.processFrames('ScrollChild');
+        this.processFrames('Animations');
+        this.processLayer('NormalTexture');
+        this.processLayer('HighlightTexture');
+        this.processLayer('PushedTexture');
+        this.processLayer('DisableTexture');
+        this.processLayer('CheckedTexture');
+        this.processLayer('ButtonText', 'FontString');
 
-        this.fields.push(
-            ...(elementFinder
-                .tag('Frames')
-                ?.children.filter((f) => f.element.getAttribute('parentKey'))
-                .map((f) => new UiObject(f.element, this)) ?? [])
-        );
-
-        this.keyValues.push(
-            ...(elementFinder.tag('KeyValues')?.children.map((x) => new BaseType(x.element, this)) ?? [])
-        );
+        this.keyValues.push(...(this.f.tag('KeyValues')?.children.map((x) => new BaseType(x.element, this)) ?? []));
     }
 
     isClass() {
@@ -141,6 +135,10 @@ class UiObject implements Field {
 
     isContainer() {
         return this.fields.length > 0 || this.keyValues.length > 0;
+    }
+
+    isNeedGenClass() {
+        return this.inherits.length > 1 && !this.isContainer();
     }
 
     isGlobal() {
@@ -152,7 +150,9 @@ class UiObject implements Field {
     }
 
     resolveClassName() {
-        return this.isClass() || this.isContainer() ? this.className : this.inherits.join(' , ');
+        return this.isClass() || this.isContainer() || this.isNeedGenClass()
+            ? this.className
+            : this.inherits.join(' , ');
     }
 
     get className() {
@@ -171,14 +171,49 @@ class UiObject implements Field {
             })()
         );
     }
+
+    protected processFrames(tagName: string) {
+        this.fields.push(
+            ...(this.f
+                .tag(tagName)
+                ?.children.filter((f) => f.element.getAttribute('parentKey'))
+                .map((f) => new UiObject(f.element, this)) ?? [])
+        );
+    }
+
+    protected processLayers() {
+        this.fields.push(
+            ...(this.f
+                .tag('Layers')
+                ?.tags('Layer')
+                .map((f) =>
+                    f.children
+                        .filter((f) => f.element.getAttribute('parentKey'))
+                        .map((f) => new UiObject(f.element, this, true))
+                )
+                .flat() ?? [])
+        );
+    }
+
+    protected processLayer(tagName: string, overrideTagName?: string) {
+        const node = this.f.tag(tagName);
+        if (node && node.element.getAttribute('parentKey')) {
+            this.fields.push(new UiObject(node.element, this, true, overrideTagName ?? 'Texture'));
+        }
+    }
 }
 
 export class Emmy {
+    isBlizzard: boolean;
+
     async run(filePath?: string) {
+        this.isBlizzard = !!filePath;
+
         let files: File[];
         if (!filePath) {
             const project = new Project(true);
             await project.init();
+            gEnv.setEnv(project.buildEnvs.values().next().value);
             files = await project.findFiles();
         } else {
             if (path.extname(filePath).toLowerCase() !== '.toc') {
@@ -194,7 +229,7 @@ export class Emmy {
             try {
                 if (ext === '.xml') {
                     await this.processXmlFile(file);
-                } else if (ext === '.lua') {
+                } else if (ext === '.lua' && this.isBlizzard) {
                     await this.processLuaFile(file);
                 }
             } catch (error) {
@@ -208,7 +243,7 @@ export class Emmy {
             this.processFrame(field, out);
         }
 
-        if (frame.isClass() || frame.isContainer()) {
+        if (frame.isClass() || frame.isContainer() || frame.isNeedGenClass()) {
             if (frame.inherits.length > 0) {
                 out.push(`---@class ${frame.className} : ${frame.inherits.join(' , ')}`);
             } else {
@@ -251,7 +286,7 @@ export class Emmy {
         const ui = doc.getElementsByTagName('Ui')?.[0];
 
         if (!ui) {
-            throw Error('ui');
+            return;
         }
         const out: string[] = [];
         this.processDocument(ui, out);
@@ -263,11 +298,24 @@ export class Emmy {
         }
     }
 
-    processBody(body: luaparse.Statement[], out: string[]) {
+    processBody(body: luaparse.Statement[], out: string[]): [Set<string>, Map<string, string>] {
         const classes = new Set<string>();
+        const supers = new Map<string, string>();
         for (const node of body) {
             if (node.type === 'AssignmentStatement') {
-                // todo:
+                const init = node.init[0];
+                if (
+                    init.type === 'CallExpression' &&
+                    init.base.type === 'Identifier' &&
+                    init.base.name === 'CreateFromMixins' &&
+                    init.arguments[0].type === 'Identifier' &&
+                    node.variables[0].type === 'Identifier'
+                ) {
+                    const supr = init.arguments[0].name;
+                    const klass = node.variables[0].name;
+
+                    supers.set(klass, supr);
+                }
             } else if (node.type === 'FunctionDeclaration') {
                 if (!node.isLocal && node.identifier) {
                     const identifier = node.identifier;
@@ -291,14 +339,14 @@ export class Emmy {
                     }
                 }
             } else if (node.type === 'DoStatement') {
-                const r = this.processBody(node.body, out);
+                const [r] = this.processBody(node.body, out);
 
                 for (const rr of r) {
                     classes.add(rr);
                 }
             }
         }
-        return classes;
+        return [classes, supers];
     }
 
     async processLuaFile(file: File) {
@@ -308,10 +356,21 @@ export class Emmy {
 
             let out: string[] = [];
 
-            const classes = this.processBody(ast.body, out);
+            const [classes, supers] = this.processBody(ast.body, out);
             const globals = (((ast as unknown) as any).globals as Identifier[])
                 .filter((x) => classes.has(x.name))
-                .map((x) => `---@class ${x.name}\n${x.name} = {}`);
+                .map((x) => {
+                    const supr = supers.get(x.name);
+                    if (supr) {
+                        return `---@class ${x.name}: ${supr}\n${x.name} = {}`;
+                    } else {
+                        return `---@class ${x.name}\n${x.name} = {}`;
+                    }
+                });
+
+            if (classes.has('ScrollingMessageFrameMixin')) {
+                console.log(1);
+            }
 
             out = [...globals, ...out];
 

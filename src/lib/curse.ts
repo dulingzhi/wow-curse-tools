@@ -53,8 +53,8 @@ export class Curse {
         form.append(
             'metadata',
             JSON.stringify({
-                changelog: changelog,
-                changelogType: ['markdown'],
+                changelog: changelog || '',
+                changelogType: 'markdown',
                 gameVersions: [wowVersion],
                 releaseType: 'release',
                 displayName: version,

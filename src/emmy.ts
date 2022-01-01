@@ -221,7 +221,7 @@ export class Emmy {
                             await fs.readdir('Interface/AddOns')
                         ).map((x) => path.join('Interface/AddOns', x, x + '.toc')),
                     ].map(async (x) => {
-                        if (fs.pathExists(x)) {
+                        if (await fs.pathExists(x)) {
                             const folder = path.dirname(x);
                             const name = path.basename(x, '.toc');
                             return await findFiles(folder, name);
@@ -405,6 +405,6 @@ export class Emmy {
 
     async writeFile(filePath: string, out: string[], sep = '\n') {
         await fs.mkdirp(path.dirname(filePath));
-        await fs.writeFile(filePath, out.join(sep));
+        await fs.writeFile(filePath, '---@meta\n' + out.join(sep));
     }
 }

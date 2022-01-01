@@ -60,6 +60,8 @@ class App {
 
         program
             .command('emmyui')
+            .alias('emmylua')
+            .alias('emmy')
             .option('--blizzard')
             .description('gen ui')
             .action(async (opts: { blizzard?: boolean }) => {

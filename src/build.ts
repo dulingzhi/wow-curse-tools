@@ -102,7 +102,7 @@ export class Build {
         if (content ? await writeFile(targetFile, content) : await copyFile(file.path, targetFile)) {
             console.log(`compile file: "${targetFile}"`);
         } else {
-            console.log(`ignore file: "${targetFile}"`);
+            // console.log(`ignore file: "${targetFile}"`);
         }
     }
 

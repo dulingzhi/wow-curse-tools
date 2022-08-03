@@ -18,7 +18,13 @@ export class LuaCompiler implements Compiler {
             .replace(/--\[=*\[@non-(\w+)@/g, (r, x) => (gEnv.checkCondition(x) ? r : `--@non-${x}@`))
             .replace(/--@end-non-(\w+)@\]=*\]/g, (r, x) => (gEnv.checkCondition(x) ? r : `--@end-non-${x}@`))
             .replace(/--\s*@non-(\w+)@/g, (r, x) => (!gEnv.checkCondition(x) ? r : `--[${eq}[@non-${x}@`))
-            .replace(/--\s*@end-non-(\w+)@(?!\])/, (r, x) => (!gEnv.checkCondition(x) ? r : `--@end-non-${x}@]${eq}]`));
+            .replace(/--\s*@end-non-(\w+)@(?!\])/, (r, x) => (!gEnv.checkCondition(x) ? r : `--@end-non-${x}@]${eq}]`))
+            .replace(/--\s*@build([><=]+)(\d+)@/g, (r, o, b) =>
+                gEnv.checkBuild(o, b) ? r : `--[${eq}[@build${o}${b}@`
+            )
+            .replace(/--\s*@end-build([><=]+)(\d+)@(?!\])/g, (r, o, b) =>
+                gEnv.checkBuild(o, b) ? r : `--@end-build${o}${b}@]${eq}]`
+            );
     }
 
     protected getCommentEqual(code: string) {

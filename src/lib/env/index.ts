@@ -39,6 +39,34 @@ class EnvManager {
     checkCondition(condition: string) {
         return this._conditions?.has(condition) && this._conditions.get(condition);
     }
+
+    checkBuild(op: string, v: string) {
+        let ver = Number.parseInt(v);
+        if (!ver) {
+            throw Error(`unknown version: ${v}`);
+        }
+
+        if (ver < 10000) {
+            ver *= 10000;
+        }
+
+        const version = Number.parseInt(this._env.buildInfo.interface);
+
+        switch (op) {
+            case '>':
+                return version > ver;
+            case '>=':
+                return version >= ver;
+            case '<':
+                return version < ver;
+            case '<=':
+                return version <= ver;
+            case '=':
+                return version == ver;
+            default:
+                throw Error(`unknown op: ${op}`);
+        }
+    }
 }
 
 export const gEnv = new EnvManager();

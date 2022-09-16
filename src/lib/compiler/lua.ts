@@ -42,7 +42,7 @@ export class LuaCompiler implements Compiler {
                 f: (e, s, x) => (!gEnv.checkCondition(x) ? s : `--[${e}[@non-${x}@`),
             },
             {
-                r: /--\s*@end-non-(\w+)@(?!\])/,
+                r: /--\s*@end-non-(\w+)@(?!\])/g,
                 f: (e, s, x) => (!gEnv.checkCondition(x) ? s : `--@end-non-${x}@]${e}]`),
             },
         ],

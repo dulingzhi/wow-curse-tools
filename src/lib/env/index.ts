@@ -62,7 +62,7 @@ class EnvManager {
             case '<=':
                 return version <= ver;
             case '=':
-                return version == ver;
+                return version === ver;
             default:
                 throw Error(`unknown op: ${op}`);
         }

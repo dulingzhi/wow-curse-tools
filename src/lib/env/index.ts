@@ -16,6 +16,7 @@ export interface Env {
     wowVersion: string;
     debug: boolean;
     builds: string[];
+    resFilters: string[];
 }
 
 class EnvManager {

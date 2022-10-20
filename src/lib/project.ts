@@ -33,6 +33,8 @@ interface WowPackage {
     old_version_style: boolean;
     builds?: BuildMap;
     localizations?: any;
+    // eslint-disable-next-line camelcase
+    res_filters?: string[];
 }
 
 export class Project implements Addon {
@@ -44,6 +46,7 @@ export class Project implements Addon {
     private _addons: Addon[] = [];
     private _localizations: Localization[] = [];
     private _buildEnvs = new Map<string, Env>();
+    private _resFilters: string[] = [];
 
     constructor(readonly debug = false) {}
 
@@ -137,6 +140,10 @@ export class Project implements Addon {
             this._version = this.parseOldVersionStyle(pkg.version);
         }
 
+        if (p.res_filters) {
+            this._resFilters = p.res_filters;
+        }
+
         if (p.builds) {
             const builds = Object.keys(p.builds);
 
@@ -150,6 +157,7 @@ export class Project implements Addon {
                     version: this._version,
                     debug: this.debug,
                     wowVersion: this.parseWowVersion(buildInfo.interface),
+                    resFilters: this._resFilters,
                 });
             }
         }
@@ -165,6 +173,7 @@ export class Project implements Addon {
                     debug: this.debug,
                     wowVersion: this.parseWowVersion(m[1]),
                     builds: [],
+                    resFilters: this._resFilters,
                 });
             }
         }

@@ -8,7 +8,7 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
 
-import { DOMParser } from 'xmldom';
+import { DOMParser } from '@xmldom/xmldom';
 import { isNeedRemoveNode, readFile } from '../util';
 import { gEnv } from '../env';
 

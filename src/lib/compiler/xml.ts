@@ -5,7 +5,7 @@
  * @Date   : 5/8/2021, 1:14:56 PM
  */
 
-import { DOMParser, XMLSerializer } from 'xmldom';
+import { DOMParser, XMLSerializer } from '@xmldom/xmldom';
 import { Compiler } from './compiler';
 
 import { isNeedRemoveNode } from '../util';

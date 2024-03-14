@@ -9,7 +9,7 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as luaparse from 'luaparse';
 
-import { DOMParser } from 'xmldom';
+import { DOMParser } from '@xmldom/xmldom';
 
 import { File, findFiles } from './lib/files';
 import { Project } from './lib/project';

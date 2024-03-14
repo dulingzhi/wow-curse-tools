@@ -25,8 +25,7 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
-    "stripInternal": true,
-    "suppressImplicitAnyIndexErrors": true
+    "stripInternal": true
   },
   "include": ["src/**/*.ts", "bin/**/*.ts"],
   "exclude": ["node_modules", ".vscode-test"]

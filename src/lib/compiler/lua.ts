@@ -82,7 +82,6 @@ export class LuaCompiler implements Compiler {
             this.lastEqualsLength++;
         }
         this.commentEquals.add(this.lastEqualsLength);
-        console.log(this.lastEqualsLength);
         return '='.repeat(this.lastEqualsLength);
     }
 

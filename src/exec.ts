@@ -76,13 +76,22 @@ class App {
             });
 
         {
-            const c = program.command('locale');
+            const locale = program.command('locale');
 
-            c.command('export')
+            locale
+                .command('export')
                 .description('export locale')
                 .option('-T, --token <token>', 'Your curse API token')
                 .action(async (opts) => {
                     await new (await import('./locale')).Locale(opts.token || process.env.CURSE_TOKEN).export();
+                });
+
+            locale
+                .command('import')
+                .description('import locale')
+                .option('-T, --token <token>', 'Your curse API token')
+                .action(async (opts) => {
+                    await new (await import('./locale')).Locale(opts.token || process.env.CURSE_TOKEN).import();
                 });
         }
 

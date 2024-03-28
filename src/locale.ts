@@ -10,12 +10,13 @@ import { findFiles } from './lib/files';
 import { Project } from './lib/project';
 import { gEnv } from './lib/env';
 import { Curse } from './lib/curse';
+import { readLocale } from './lib/locale';
 
 export class Locale {
     private project = new Project();
     constructor(private token: string) {}
 
-    async export() {
+    async init() {
         await this.project.init();
 
         const env = this.project.buildEnvs.values().next().value;
@@ -23,6 +24,10 @@ export class Locale {
             return;
         }
         gEnv.setEnv(env);
+    }
+
+    async export() {
+        await this.init();
 
         const cli = new Curse(this.project.curseId, this.token);
 
@@ -62,6 +67,20 @@ export class Locale {
                         fs.writeFile(file.path, body);
                     }
                 }
+            }
+        }
+    }
+
+    async import() {
+        await this.init();
+
+        const cli = new Curse(this.project.curseId, this.token);
+
+        for (const l of this.project.localizations) {
+            const locale = await readLocale(l.path);
+
+            if (locale) {
+                await cli.importLocale(l.lang, locale);
             }
         }
     }

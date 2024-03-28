@@ -107,4 +107,29 @@ export class Curse {
             throw Error('upload locale failed');
         }
     }
+
+    async exportLocale(lang: string, type = 'TableAdditions') {
+        const url = new URL(`${this.base}/projects/${this.curseId}/localization/export`);
+        url.searchParams.append('lang', lang);
+        url.searchParams.append('export-type', type);
+        url.searchParams.append('unlocalized', 'ShowPrimaryAsComment');
+        url.searchParams.append('true-if-value-equals-key', 'true');
+
+        try {
+            const resp = await Got.get(url, {
+                headers: {
+                    'X-Api-Token': this.token,
+                    'user-agent': '',
+                },
+            });
+
+            if (resp.statusCode !== 200 || !resp.body) {
+                throw Error('export locale failed');
+            }
+            return resp.body;
+        } catch {
+            console.error(`export locale failed : ${url}`);
+        }
+        return '';
+    }
 }

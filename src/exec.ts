@@ -75,6 +75,17 @@ class App {
                 await new (await import('./config')).Config().run();
             });
 
+        {
+            const c = program.command('locale');
+
+            c.command('export')
+                .description('export locale')
+                .option('-T, --token <token>', 'Your curse API token')
+                .action(async (opts) => {
+                    await new (await import('./locale')).Locale(opts.token || process.env.CURSE_TOKEN).export();
+                });
+        }
+
         program.parse(process.argv);
     }
 }

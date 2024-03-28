@@ -93,6 +93,13 @@ class App {
                 .action(async (opts) => {
                     await new (await import('./locale')).Locale(opts.token || process.env.CURSE_TOKEN).import();
                 });
+
+            locale
+                .command('scan')
+                .description('scan locale')
+                .action(async () => {
+                    await new (await import('./locale')).Locale('').scan();
+                });
         }
 
         program.parse(process.argv);

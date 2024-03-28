@@ -12,7 +12,7 @@
       "program": "${workspaceFolder}\\dist\\exec.js",
       "cwd": "H:\\wow\\addon\\tdBag2",
       // "console": "externalTerminal",
-      "args": ["locale", "export"],
+      "args": ["locale", "scan"],
       "preLaunchTask": "webpack: watch",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"]
     }

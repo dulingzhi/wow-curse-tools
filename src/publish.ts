@@ -8,7 +8,6 @@
 import * as fs from 'fs-extra';
 import { Flusher } from './lib/flusher';
 import { Curse } from './lib/curse';
-import { readLocale } from './lib/locale';
 import { Project } from './lib/project';
 
 export class Publish {
@@ -25,14 +24,6 @@ export class Publish {
         }
 
         const cli = new Curse(project.curseId, token);
-
-        for (const l of project.localizations) {
-            const locale = await readLocale(l.path);
-
-            if (locale) {
-                await cli.importLocale(l.lang, locale);
-            }
-        }
 
         for (const [buildId, env] of project.buildEnvs) {
             if (!builds || builds.includes(buildId)) {

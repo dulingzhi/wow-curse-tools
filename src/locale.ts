@@ -51,9 +51,6 @@ class Scaner {
     }
 
     scanArray(ns: any[]) {
-        if (typeof ns !== 'object') {
-            console.log(ns);
-        }
         for (const n of ns) {
             this.scanNode(n);
         }

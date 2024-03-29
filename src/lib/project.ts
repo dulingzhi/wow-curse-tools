@@ -47,6 +47,8 @@ export class Project implements Addon {
     private _localizations: Localization[] = [];
     private _buildEnvs = new Map<string, Env>();
     private _resFilters: string[] = [];
+    private _localeFolder: string = '';
+    private _localeIgnores: string[] = [];
 
     constructor(readonly debug = false) {}
 
@@ -80,6 +82,14 @@ export class Project implements Addon {
 
     get buildEnvs() {
         return this._buildEnvs;
+    }
+
+    get localeFolder() {
+        return this._localeFolder;
+    }
+
+    get localeIgnores() {
+        return this._localeIgnores;
     }
 
     genFileName(buildId: string) {
@@ -119,6 +129,10 @@ export class Project implements Addon {
 
     async findFiles() {
         return await findFiles(this._folder, this._name);
+    }
+
+    async allFiles() {
+        return (await Promise.all(this.addons.map((addon) => findFiles(addon.folder, addon.name)))).flat();
     }
 
     async init() {
@@ -189,17 +203,31 @@ export class Project implements Addon {
             }
         }
 
-        if (pkg.wow.localizations) {
-            for (const [key, v] of Object.entries(pkg.wow.localizations)) {
-                this._localizations.push({
-                    lang: key,
-                    path: v as string,
-                });
-            }
-        }
-
         if (pkg.wow.changelog) {
             this._changelog = await readChangeLog(pkg.wow.changelog, this._version);
+        }
+
+        if (pkg.wow.localization) {
+            this._localeFolder = path.resolve(pkg.wow.localization.folder);
+            this._localeIgnores = (pkg.wow.localization.ignores || []).map((f: string) => path.resolve(f));
+
+            if (pkg.wow.localization.imports) {
+                this.applyLocalizations(pkg.wow.localization.imports, this._localeFolder);
+            }
+        } else if (pkg.wow.localizations) {
+            if (pkg.wow.localizations) {
+                this.applyLocalizations(pkg.wow.localizations);
+            }
+        }
+    }
+
+    applyLocalizations(o: any, folder?: string) {
+        for (const [key, v] of Object.entries(o)) {
+            const p = v as string;
+            this._localizations.push({
+                lang: key,
+                path: folder ? path.resolve(folder, p) : path.resolve(p),
+            });
         }
     }
 }

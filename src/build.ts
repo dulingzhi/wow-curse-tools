@@ -12,7 +12,7 @@ import * as fs from 'fs-extra';
 import * as Watcher from 'watcher';
 
 import { Project } from './lib/project';
-import { File, findFiles } from './lib/files';
+import { File } from './lib/files';
 import { gCompilerManager } from './lib/compiler';
 import { gEnv } from './lib/env';
 import { copyFile, isListFile, writeFile } from './lib/util';
@@ -69,9 +69,7 @@ export class Build {
 
     private async refresh() {
         try {
-            const files = (
-                await Promise.all(this.project.addons.map((addon) => findFiles(addon.folder, addon.name)))
-            ).flat();
+            const files = await this.project.allFiles();
             const filesMap = new Map(files.map((file) => [file.path, file]));
 
             await Promise.all(files.filter((file) => !this.files.has(file.path)).map((file) => this.compileFile(file)));

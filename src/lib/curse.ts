@@ -87,6 +87,7 @@ export class Curse {
 
         form.append('metadata', JSON.stringify({ language: lang }));
         form.append('localizations', data);
+        form.append('missing-phrase-handling', 'DeletePhrase');
 
         const url = `${this.base}/projects/${this.curseId}/localization/import`;
 

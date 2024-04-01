@@ -100,7 +100,7 @@ end
 local function scanFiles(paths)
     local locales = {}
     for i, p in ipairs(paths) do
-        scanLocale(locales, readFile(p))
+        scanLocale(locales, io.readFile(p))
     end
     return locales
 end
@@ -134,7 +134,7 @@ local function removeLocales(p, locales)
         return
     end
 
-    llex.init(readFile(p))
+    llex.init(io.readFile(p))
     llex.llex()
 
     local data = {}
@@ -172,7 +172,7 @@ local function removeLocales(p, locales)
         i = ii or (i + 1)
     end
 
-    writeFile(p, table.concat(data, ''))
+    io.writeFile(p, table.concat(data, ''))
 end
 
 local function insertLocales(p, locales)
@@ -180,7 +180,7 @@ local function insertLocales(p, locales)
         return
     end
 
-    local d = readFile(p)
+    local d = io.readFile(p)
     if not d:find('%-%-%s*@locale%-fill@') then
         return
     end
@@ -203,7 +203,7 @@ local function insertLocales(p, locales)
         end
     end
 
-    writeFile(p, d:gsub('%-%-%s*@locale%-fill@', function(x)
+    io.writeFile(p, d:gsub('%-%-%s*@locale%-fill@', function(x)
         return table.concat(data, '\n') .. '\n' .. x
     end))
 end

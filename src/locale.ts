@@ -11,7 +11,7 @@ import { Project } from './lib/project';
 import { gEnv } from './lib/env';
 import { Curse } from './lib/curse';
 import { readLocale } from './lib/locale';
-import { LuaFactory } from 'wasmoon';
+import { LuaFactory, LuaType } from 'wasmoon';
 
 function isInFolder(p: string, f: string) {
     return !path.relative(f, p).startsWith('..');
@@ -112,19 +112,40 @@ export class Locale {
 
         const factory = new LuaFactory();
 
-        // const L = factory.getLuaModule();
-
         await factory.mountFile('locale.lua', (await import('./lua/locale.lua')).default);
         await factory.mountFile('llex.lua', (await import('./lua/llex.lua')).default);
-        await factory.mountFile('lparser.lua', (await import('./lua/lparser.lua')).default);
+        // await factory.mountFile('lparser.lua', (await import('./lua/lparser.lua')).default);
 
         const lua = await factory.createEngine();
 
-        lua.global.set('readFile', (p: string) => fs.readFileSync(p, 'utf-8'));
-        lua.global.set('writeFile', (p: string, d: string) => fs.writeFileSync(p, d, 'utf-8'));
+        const A = lua.global.lua;
+        const L = lua.global.address;
+        const G = lua.global;
+
+        const apis = {
+            io: {
+                writeFile: (p: string, d: string) => fs.writeFileSync(p, d, 'utf-8'),
+                readFile: (p: string) => fs.readFileSync(p, 'utf-8'),
+            },
+        };
+
+        for (const [tn, v] of Object.entries(apis)) {
+            if (A.lua_getglobal(L, tn) !== LuaType.Table) {
+                A.lua_pop(L, 1);
+                A.lua_createtable(L, 0, Object.keys(v).length);
+                A.lua_setglobal(L, tn);
+                A.lua_getglobal(L, tn);
+            }
+            for (const [k, f] of Object.entries(v)) {
+                G.pushValue(k);
+                G.pushValue(f);
+                A.lua_settable(L, -3);
+            }
+            A.lua_pop(L, 1);
+        }
 
         await lua.doFile('./locale.lua');
 
-        lua.global.call('locale', args);
+        G.call('locale', args);
     }
 }

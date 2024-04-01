@@ -40,10 +40,12 @@
     "raw-loader": "^4.0.2",
     "ts-loader": "^8.4.0",
     "typescript": "^4.9.5",
-    "wasmoon": "^1.16.0",
     "watcher": "^1.2.0",
     "webpack": "^5.90.3",
     "webpack-cli": "^4.10.0",
     "yazl": "^2.5.1"
+  },
+  "dependencies": {
+    "wasmoon": "^1.16.0"
   }
 }

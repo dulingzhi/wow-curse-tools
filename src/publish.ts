@@ -11,7 +11,7 @@ import { Curse } from './lib/curse';
 import { Project } from './lib/project';
 
 export class Publish {
-    async run(token: string, builds?: string[]) {
+    async run(token: string, builds?: string[], forRelease = false) {
         if (!token) {
             throw Error('not found token');
         }
@@ -21,6 +21,10 @@ export class Publish {
 
         if (!project.curseId) {
             throw Error('not found curse id');
+        }
+
+        if (forRelease) {
+            await fs.writeFile('changelog.txt', project.changelog);
         }
 
         const cli = new Curse(project.curseId, token);
@@ -37,7 +41,11 @@ export class Publish {
                 await flusher.flush(fileName);
                 console.log(`Uploading package ${fileName} ...`);
                 await cli.uploadFile(fileName, project.version, wowVersionId, project.changelog);
-                await fs.unlink(fileName);
+
+                if (!forRelease) {
+                    await fs.unlink(fileName);
+                }
+
                 console.log(`Publish package ${fileName} done`);
             }
         }

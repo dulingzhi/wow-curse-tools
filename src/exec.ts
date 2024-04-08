@@ -32,12 +32,13 @@ class App {
         program
             .command('publish')
             .option('-T, --token <token>', 'Your curse API token')
+            .option('-G, --release', 'Release from git tag')
             .arguments('[builds...]')
             .description('Publish your addon.')
             .action(async (args: string[], opts) => {
                 await new (
                     await import('./publish')
-                ).Publish().run(opts.token || process.env.CURSE_TOKEN, this.optList(args));
+                ).Publish().run(opts.token || process.env.CURSE_TOKEN, this.optList(args), opts.release);
             });
 
         program

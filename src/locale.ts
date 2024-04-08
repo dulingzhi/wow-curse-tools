@@ -114,7 +114,6 @@ export class Locale {
 
         await factory.mountFile('locale.lua', (await import('./lua/locale.lua')).default);
         await factory.mountFile('llex.lua', (await import('./lua/llex.lua')).default);
-        // await factory.mountFile('lparser.lua', (await import('./lua/lparser.lua')).default);
 
         const lua = await factory.createEngine();
 

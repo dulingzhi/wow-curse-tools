@@ -9,10 +9,10 @@ const config = {
     target: "node",
 
     entry: {
-        exec: "./src/exec.ts",
+        index: "./src/actions/locale.ts",
     },
     output: {
-        path: path.resolve(__dirname, "dist"),
+        path: path.resolve(__dirname, "../curse-locale"),
         filename: "[name].js",
         libraryTarget: "commonjs2",
         devtoolModuleFilenameTemplate: "../[resource-path]",
@@ -47,7 +47,10 @@ const config = {
         ],
     },
     externals: {
-        wasmoon: "wasmoon",
+        wasmoon: "./wasmoon",
     },
 };
+
+require("./copy")(config.output.path);
+
 module.exports = config;

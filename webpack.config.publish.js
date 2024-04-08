@@ -9,10 +9,10 @@ const config = {
     target: "node",
 
     entry: {
-        exec: "./src/exec.ts",
+        index: "./src/actions/publish.ts",
     },
     output: {
-        path: path.resolve(__dirname, "dist"),
+        path: path.resolve(__dirname, "../curse-publish"),
         filename: "[name].js",
         libraryTarget: "commonjs2",
         devtoolModuleFilenameTemplate: "../[resource-path]",
@@ -47,7 +47,7 @@ const config = {
         ],
     },
     externals: {
-        wasmoon: "wasmoon",
+        wasmoon: "./wasmoon",
     },
 };
 module.exports = config;

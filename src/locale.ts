@@ -19,9 +19,14 @@ function isInFolder(p: string, f: string) {
 
 export class Locale {
     private project = new Project();
+    private inited = false;
+
     constructor(private token: string) {}
 
     async init() {
+        if (this.inited) {
+            return;
+        }
         await this.project.init();
 
         const env = this.project.buildEnvs.values().next().value;
@@ -29,6 +34,7 @@ export class Locale {
             return;
         }
         gEnv.setEnv(env);
+        this.inited = true;
     }
 
     async export() {
@@ -110,7 +116,7 @@ export class Locale {
             oldFiles: this.project.localizations.map((l) => l.path),
         };
 
-        const factory = new LuaFactory();
+        const factory = new LuaFactory(path.join(__dirname, 'glue.wasm'));
 
         await factory.mountFile('locale.lua', (await import('./lua/locale.lua')).default);
         await factory.mountFile('llex.lua', (await import('./lua/llex.lua')).default);

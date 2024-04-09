@@ -10,9 +10,16 @@ import { Flusher } from './lib/flusher';
 import { Curse } from './lib/curse';
 import { Project } from './lib/project';
 
+export interface PublishOptions {
+    token: string;
+    builds?: string[];
+    curse?: boolean;
+    github?: boolean;
+}
+
 export class Publish {
-    async run(token: string, builds?: string[], forRelease = false) {
-        if (!token) {
+    async run(opts: PublishOptions) {
+        if (opts.token.length === 0) {
             throw Error('not found token');
         }
 
@@ -23,11 +30,12 @@ export class Publish {
             throw Error('not found curse id');
         }
 
-        if (forRelease) {
+        if (opts.github) {
             await fs.writeFile('changelog.txt', project.changelog);
         }
 
-        const cli = new Curse(project.curseId, token);
+        const cli = new Curse(project.curseId, opts.token);
+        const builds = opts.builds && opts.builds.length > 0 ? opts.builds : undefined;
 
         for (const [buildId, env] of project.buildEnvs) {
             if (!builds || builds.includes(buildId)) {
@@ -39,10 +47,13 @@ export class Publish {
 
                 console.log(`Creating package ${fileName} ...`);
                 await flusher.flush(fileName);
-                console.log(`Uploading package ${fileName} ...`);
-                await cli.uploadFile(fileName, project.version, wowVersionId, project.changelog);
 
-                if (!forRelease) {
+                if (opts.curse) {
+                    console.log(`Uploading package ${fileName} ...`);
+                    await cli.uploadFile(fileName, project.version, wowVersionId, project.changelog);
+                }
+
+                if (!opts.github) {
                     await fs.unlink(fileName);
                 }
 

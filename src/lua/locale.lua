@@ -82,21 +82,6 @@ local function scanLocale(locales, code)
     return locales
 end
 
--- local function readFile(p)
---     print(p, io.close)
---     local f, e = io.open(p, 'r')
---     print(f, e)
---     local d = f:read('*a')
---     f:close()
---     return d
--- end
-
--- local function writeFile(p, d)
---     local f = io.open(p, 'wb')
---     f:write(d)
---     f:close()
--- end
-
 local function scanFiles(paths)
     local locales = {}
     for i, p in ipairs(paths) do
@@ -157,6 +142,7 @@ local function removeLocales(p, locales)
                     table.insert(data, '--[====[ never used ]====]\n')
                     table.insert(data, '--[====[ ')
                     for j = i, ii - 1 do
+                        print('REMOVE: ' .. llex.seminfo[j])
                         table.insert(data, llex.seminfo[j])
                     end
                     table.insert(data, ' ]====]')
@@ -195,6 +181,8 @@ local function insertLocales(p, locales)
     table.sort(keys)
 
     for _, k in ipairs(keys) do
+        print('FOUND: ' .. k)
+
         if k:find('^[%w_]+$') then
             table.insert(data, string.format('L.%s = true', k))
         else

@@ -38,7 +38,7 @@ class App {
             .action(async (args: string[], opts) => {
                 await new (
                     await import('./publish')
-                ).Publish().run(opts.token || process.env.CURSE_TOKEN, this.optList(args), opts.release);
+                ).Publish().run({ token: opts.token, builds: this.optList(args), curse: true });
             });
 
         program

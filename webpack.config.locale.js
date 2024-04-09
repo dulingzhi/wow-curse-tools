@@ -12,7 +12,7 @@ const config = {
         index: "./src/actions/locale.ts",
     },
     output: {
-        path: path.resolve(__dirname, "../curse-locale"),
+        path: path.resolve(__dirname, "../curse-locale-action"),
         filename: "[name].js",
         libraryTarget: "commonjs2",
         devtoolModuleFilenameTemplate: "../[resource-path]",

@@ -9,8 +9,12 @@ import * as core from '@actions/core';
 
 async function run() {
     const token = core.getInput('token', { required: true });
+    const github = core.getBooleanInput('github');
+    const curse = core.getBooleanInput('curse');
+
     const publish = new (await import('../publish')).Publish();
-    await publish.run(token, undefined, true);
+
+    await publish.run({ token, github, curse });
 }
 
 run();

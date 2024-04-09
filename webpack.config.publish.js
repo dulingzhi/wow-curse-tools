@@ -45,12 +45,7 @@ const config = {
                 ],
             },
         ],
-    },
-    externals: {
-        wasmoon: "./wasmoon",
-    },
+    }
 };
-
-require("./copy")(config.output.path);
 
 module.exports = config;

@@ -6,13 +6,14 @@
  */
 
 import * as core from '@actions/core';
+import { Publish } from '../publish';
 
 async function run() {
     const token = core.getInput('token', { required: true });
     const github = core.getBooleanInput('github');
     const curse = core.getBooleanInput('curse');
 
-    const publish = new (await import('../publish')).Publish();
+    const publish = new Publish();
 
     await publish.run({ token, github, curse });
 }

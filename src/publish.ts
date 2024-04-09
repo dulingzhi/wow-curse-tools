@@ -30,8 +30,10 @@ export class Publish {
             throw Error('not found curse id');
         }
 
-        if (opts.github && project.changelog && project.changelog.length > 0) {
-            await fs.writeFile('changelog.txt', project.changelog);
+        if (opts.github) {
+            const changelog =
+                project.changelog && project.changelog.length > 0 ? project.changelog : 'No write changelog';
+            await fs.writeFile('changelog.txt', changelog);
         }
 
         const cli = new Curse(project.curseId, opts.token);

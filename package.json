@@ -12,7 +12,8 @@
     "compile": "webpack --mode development",
     "watch": "webpack --mode development --watch",
     "action-publish": "webpack --mode production --config webpack.config.publish.js",
-    "action-locale": "webpack --mode production --config webpack.config.locale.js"
+    "action-locale": "webpack --mode production --config webpack.config.locale.js",
+    "action": "npm run action-publish && npm run action-locale"
   },
   "author": "Dencer",
   "license": "MIT",

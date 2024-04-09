@@ -50,4 +50,7 @@ const config = {
         wasmoon: "./wasmoon",
     },
 };
+
+require("./copy")(config.output.path);
+
 module.exports = config;

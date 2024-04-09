@@ -7,10 +7,19 @@
 
 import * as process from 'process';
 import * as program from 'commander';
+import { BuildId, gEnv } from './lib/env';
+import { Init } from './init';
+import { Package } from './package';
+import { Publish } from './publish';
+import { Build } from './build';
+import { Emmy } from './emmy';
+import { Config } from './config';
+import { Locale } from './locale';
 
 class App {
-    optList(args: string[]) {
-        return args.length > 0 ? args : undefined;
+    optBuilds(args: string[]) {
+        const builds = args.map((x) => gEnv.toBuildId(x)).filter((x) => x !== BuildId.Unknown);
+        return builds.length > 0 ? builds : undefined;
     }
 
     run() {
@@ -18,7 +27,7 @@ class App {
             .command('init')
             .description('Init your addon project.')
             .action(async () => {
-                await new (await import('./init')).Init().run();
+                await new Init().run();
             });
 
         program
@@ -26,7 +35,7 @@ class App {
             .arguments('[builds...]')
             .description('Package your addon.')
             .action(async (args: string[]) => {
-                await new (await import('./package')).Package().run(this.optList(args));
+                await new Package().run(this.optBuilds(args));
             });
 
         program
@@ -36,9 +45,7 @@ class App {
             .arguments('[builds...]')
             .description('Publish your addon.')
             .action(async (args: string[], opts) => {
-                await new (
-                    await import('./publish')
-                ).Publish().run({ token: opts.token, builds: this.optList(args), curse: true });
+                await new Publish().run({ token: opts.token, builds: this.optBuilds(args), curse: true });
             });
 
         program
@@ -46,8 +53,13 @@ class App {
             .arguments('[build]')
             .option('-O --output <output>')
             .description('watch the addon')
-            .action(async (buildId: string, opts) => {
-                await new (await import('./build')).Build().run(opts.output, buildId);
+            .action(async (bs: string, opts) => {
+                const buildId = gEnv.toBuildId(bs);
+                if (!buildId) {
+                    console.error(`Invalid build id: ${bs}`);
+                    return;
+                }
+                await new Build().run(opts.output, buildId);
             });
 
         program
@@ -55,8 +67,13 @@ class App {
             .arguments('[build]')
             .option('-O --output <output>')
             .description('watch the addon')
-            .action(async (buildId: string, opts: { output?: string }) => {
-                await new (await import('./build')).Build(true).run(opts.output, buildId);
+            .action(async (bs: string, opts: { output?: string }) => {
+                const buildId = gEnv.toBuildId(bs);
+                if (!buildId) {
+                    console.error(`Invalid build id: ${bs}`);
+                    return;
+                }
+                await new Build(true).run(opts.output, buildId);
             });
 
         program
@@ -66,14 +83,14 @@ class App {
             .option('--blizzard')
             .description('gen ui')
             .action(async (opts: { blizzard?: boolean }) => {
-                await new (await import('./emmy')).Emmy(opts.blizzard).run();
+                await new Emmy(opts.blizzard).run();
             });
 
         program
             .command('config')
             .description('config wct')
             .action(async () => {
-                await new (await import('./config')).Config().run();
+                await new Config().run();
             });
 
         {
@@ -84,7 +101,7 @@ class App {
                 .description('export locale')
                 .option('-T, --token <token>', 'Your curse API token')
                 .action(async (opts) => {
-                    await new (await import('./locale')).Locale(opts.token || process.env.CURSE_TOKEN).export();
+                    await new Locale(opts.token || process.env.CURSE_TOKEN).export();
                 });
 
             locale
@@ -92,14 +109,14 @@ class App {
                 .description('import locale')
                 .option('-T, --token <token>', 'Your curse API token')
                 .action(async (opts) => {
-                    await new (await import('./locale')).Locale(opts.token || process.env.CURSE_TOKEN).import();
+                    await new Locale(opts.token || process.env.CURSE_TOKEN).import();
                 });
 
             locale
                 .command('scan')
                 .description('scan locale')
                 .action(async () => {
-                    await new (await import('./locale')).Locale('').scan();
+                    await new Locale('').scan();
                 });
         }
 

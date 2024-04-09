@@ -7,7 +7,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { BuildInfo, Env } from './env';
+import { BuildId, BuildInfo, Env, gEnv } from './env';
 import { findFiles } from './files';
 import { readChangeLog, readFile } from './util';
 
@@ -31,6 +31,7 @@ interface WowPackage {
     curse_id?: number;
     // eslint-disable-next-line camelcase
     old_version_style: boolean;
+    kinds?: string[];
     builds?: BuildMap;
     localizations?: any;
     // eslint-disable-next-line camelcase
@@ -45,7 +46,7 @@ export class Project implements Addon {
     private _changelog?: string;
     private _addons: Addon[] = [];
     private _localizations: Localization[] = [];
-    private _buildEnvs = new Map<string, Env>();
+    private _buildEnvs = new Map<BuildId, Env>();
     private _resFilters: string[] = [];
     private _localeFolder: string = '';
     private _localeIgnores: string[] = [];
@@ -92,12 +93,14 @@ export class Project implements Addon {
         return this._localeIgnores;
     }
 
-    genFileName(buildId: string) {
-        if (!buildId || buildId === 'none') {
-            return `${this.name}-${this.version}.zip`;
-        } else {
-            return `${this.name}-${buildId}-${this.version}.zip`;
+    genFileName(buildId: BuildId) {
+        if (buildId) {
+            const suffix = gEnv.getBuildSuffix(buildId);
+            if (suffix && suffix.length > 0) {
+                return `${this.name}-${suffix}-${this.version}.zip`;
+            }
         }
+        return `${this.name}-${this.version}.zip`;
     }
 
     private parseWowVersion(t: string) {
@@ -159,9 +162,12 @@ export class Project implements Addon {
         }
 
         if (p.builds) {
-            const builds = Object.keys(p.builds);
+            const builds = Object.keys(p.builds)
+                .map((x) => gEnv.toBuildId(x))
+                .filter((x) => x !== BuildId.Unknown);
 
-            for (const [buildId, info] of Object.entries(p.builds)) {
+            for (const [buildIdStr, info] of Object.entries(p.builds)) {
+                const buildId = gEnv.toBuildId(buildIdStr);
                 const buildInfo: BuildInfo = typeof info === 'string' ? { interface: info } : info;
 
                 this._buildEnvs.set(buildId, {
@@ -180,8 +186,8 @@ export class Project implements Addon {
             const toc = await readFile(`./${pkg.wow.name}.toc`);
             const m = toc.match(/##\s*Interface\s*:\s*(\d+)/);
             if (m) {
-                this._buildEnvs.set('none', {
-                    buildId: 'none',
+                this._buildEnvs.set(BuildId.Unknown, {
+                    buildId: BuildId.Unknown,
                     buildInfo: { interface: m[1] },
                     version: this._version,
                     debug: this.debug,

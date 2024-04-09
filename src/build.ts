@@ -8,13 +8,12 @@
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-
 import * as Watcher from 'watcher';
 
 import { Project } from './lib/project';
 import { File } from './lib/files';
 import { gCompilerManager } from './lib/compiler';
-import { gEnv } from './lib/env';
+import { BuildId, gEnv } from './lib/env';
 import { copyFile, isListFile, writeFile } from './lib/util';
 import { Mutex } from 'async-mutex';
 
@@ -26,13 +25,33 @@ export class Build {
 
     constructor(private watch = false) {}
 
-    async run(output: string | undefined, buildId: string = 'none') {
+    async run(output: string | undefined, buildId: BuildId) {
+        await this.project.init();
+
+        const env = this.project.buildEnvs.get(buildId);
+        if (!env) {
+            throw Error('error build');
+        }
+
         if (output) {
             this.output = output;
         } else {
             try {
                 const cfg = await fs.readJson(path.resolve(os.homedir(), '.wct.json'));
-                this.output = path.resolve(cfg.buildPath[buildId], 'Interface/AddOns');
+
+                if (typeof cfg.buildPath === 'string') {
+                    this.output = path.join(cfg.buildPath, gEnv.getBuildDirName(buildId) as string, 'Interface/AddOns');
+                } else {
+                    // this.output = path.resolve(cfg.buildPath[buildId], 'Interface/AddOns');
+
+                    for (const [, p] of Object.entries(cfg.buildPath)) {
+                        this.output = path.join(
+                            path.dirname(p as string),
+                            gEnv.getBuildDirName(buildId) as string,
+                            'Interface/AddOns'
+                        );
+                    }
+                }
             } catch (error) {}
         }
 
@@ -40,15 +59,8 @@ export class Build {
             throw Error('Unknown output path');
         }
 
-        await this.project.init();
-
         if (path.resolve(this.output, this.project.name).toLowerCase() === this.project.folder.toLowerCase()) {
             throw Error('code folder is same as output folder');
-        }
-
-        const env = this.project.buildEnvs.get(buildId || 'none');
-        if (!env) {
-            throw Error('error build');
         }
 
         gEnv.setEnv(env);

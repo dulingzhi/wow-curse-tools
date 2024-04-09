@@ -11,13 +11,13 @@ import { ZipFile } from 'yazl';
 
 import { Project } from './project';
 import { gCompilerManager } from './compiler';
-import { gEnv } from './env';
+import { BuildId, gEnv } from './env';
 import { findFiles } from './files';
 
 export class Flusher {
     private zipFile = new ZipFile();
 
-    constructor(private project: Project, buildId: string) {
+    constructor(private project: Project, buildId: BuildId) {
         const env = project.buildEnvs.get(buildId);
         if (!env) {
             throw Error('not found env');

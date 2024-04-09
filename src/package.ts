@@ -5,11 +5,12 @@
  * @Date   : 5/6/2021, 5:48:39 PM
  */
 
+import { BuildId } from './lib/env';
 import { Flusher } from './lib/flusher';
 import { Project } from './lib/project';
 
 export class Package {
-    async run(builds?: string[]) {
+    async run(builds?: BuildId[]) {
         const project = new Project();
         await project.init();
 

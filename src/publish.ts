@@ -9,12 +9,14 @@ import * as fs from 'fs-extra';
 import { Flusher } from './lib/flusher';
 import { Curse } from './lib/curse';
 import { Project } from './lib/project';
+import { BuildId } from './lib/env';
 
 export interface PublishOptions {
     token: string;
-    builds?: string[];
+    builds?: BuildId[];
     curse?: boolean;
     github?: boolean;
+    oneBuild?: boolean;
 }
 
 export class Publish {
@@ -37,30 +39,33 @@ export class Publish {
         }
 
         const cli = new Curse(project.curseId, opts.token);
-        const builds = opts.builds && opts.builds.length > 0 ? opts.builds : undefined;
 
-        for (const [buildId, env] of project.buildEnvs) {
-            if (!builds || builds.includes(buildId)) {
-                const flusher = new Flusher(project, buildId);
-                const wowVersionId = await cli.getGameVersionIdByName(env.wowVersion);
-                console.log('wow version id:', wowVersionId);
+        if (opts.oneBuild) {
+            for (const [buildId, env] of project.buildEnvs) {
+                if (!opts.builds || opts.builds.includes(buildId)) {
+                    const flusher = new Flusher(project, buildId);
+                    const wowVersionId = await cli.getGameVersionIdByName(env.wowVersion);
+                    console.log('wow version id:', wowVersionId);
 
-                const fileName = project.genFileName(buildId);
+                    const fileName = project.genFileName(buildId);
 
-                console.log(`Creating package ${fileName} ...`);
-                await flusher.flush(fileName);
+                    console.log(`Creating package ${fileName} ...`);
+                    await flusher.flush(fileName);
 
-                if (opts.curse) {
-                    console.log(`Uploading package ${fileName} ...`);
-                    await cli.uploadFile(fileName, project.version, wowVersionId, project.changelog);
+                    if (opts.curse) {
+                        console.log(`Uploading package ${fileName} ...`);
+                        await cli.uploadFile(fileName, project.version, wowVersionId, project.changelog);
+                    }
+
+                    if (!opts.github) {
+                        await fs.unlink(fileName);
+                    }
+
+                    console.log(`Publish package ${fileName} done`);
                 }
-
-                if (!opts.github) {
-                    await fs.unlink(fileName);
-                }
-
-                console.log(`Publish package ${fileName} done`);
             }
+        } else {
+            console.log('Publishing all builds ...');
         }
     }
 }

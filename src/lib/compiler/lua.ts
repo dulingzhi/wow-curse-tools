@@ -49,11 +49,11 @@ export class LuaCompiler implements Compiler {
         ],
         [
             {
-                r: /--\s*@build([><=]+)(\d+)@/g,
+                r: /--\s*@build([><=@]+)(\d+)@/g,
                 f: (s, o, b) => (gEnv.checkBuild(o, b) ? s : `--[${this.getEqual('build', o, b)}[@build${o}${b}@`),
             },
             {
-                r: /--\s*@end-build([><=]+)(\d+)@(?!\])/g,
+                r: /--\s*@end-build([><=@]+)(\d+)@(?!\])/g,
                 f: (s, o, b) => (gEnv.checkBuild(o, b) ? s : `--@end-build${o}${b}@]${this.getEqual('build', o, b)}]`),
             },
         ],

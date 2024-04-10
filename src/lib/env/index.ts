@@ -11,8 +11,8 @@ export interface BuildInfo {
 
 export enum BuildId {
     Unknown = 0,
-    Retail,
-    Classic,
+    Mainline,
+    Vanilla,
     Wrath,
 }
 
@@ -29,17 +29,33 @@ export interface Env {
 interface BuildIdData {
     path: string;
     suffix: string;
-    atlas?: string[];
+    atlas: string[];
 }
+
+const BUILD_DATA = {
+    Vanilla: {
+        path: '_classic_era_',
+        suffix: 'Vanilla',
+        atlas: ['classic', 'vanilla', 'Classic', 'Vanilla'],
+    },
+    Wrath: {
+        path: '_classic_',
+        suffix: 'Wrath',
+        atlas: ['lkc', 'wrath', 'WOTLKC', 'Wrath'],
+    },
+    Mainline: {
+        path: '_retail_',
+        suffix: 'Mainline',
+        atlas: ['retail', 'Retail', 'Mainline'],
+    },
+};
 
 class EnvManager {
     private _env: Env;
     private _conditions?: Map<string, boolean>;
-    private _buildData: Map<BuildId, BuildIdData> = new Map([
-        [BuildId.Classic, { path: '_classic_era_', suffix: 'Classic', atlas: ['classic'] }],
-        [BuildId.Wrath, { path: '_classic_', suffix: 'Wrath', atlas: ['lkc', 'wrath'] }],
-        [BuildId.Retail, { path: '_retail_', suffix: '', atlas: ['retail'] }],
-    ]);
+    private _buildData: Map<BuildId, BuildIdData> = new Map(
+        Object.entries(BUILD_DATA).map(([k, v]) => [BuildId[k as keyof typeof BuildId], v])
+    );
 
     get env() {
         return this._env;
@@ -51,8 +67,20 @@ class EnvManager {
             ['debug', env.debug],
             ['release', !env.debug],
             ['import', true],
-            // ...env.builds.map<[BuildId, boolean]>((x) => [x, x === env.buildId]),
         ]);
+
+        for (const buildId of env.builds) {
+            const flag = buildId === env.buildId;
+
+            this._conditions.set(BuildId[buildId], flag);
+
+            const data = this._buildData.get(buildId);
+            if (data) {
+                for (const a of data.atlas) {
+                    this._conditions.set(a, flag);
+                }
+            }
+        }
     }
 
     toBuildId(key: string) {
@@ -103,7 +131,13 @@ class EnvManager {
             case '<=':
                 return version <= ver;
             case '=':
+            case '==':
                 return version === ver;
+            case '!=':
+            case '~=':
+                return version !== ver;
+            case '@':
+                return Math.abs(version - ver) < 10000;
             default:
                 throw Error(`unknown op: ${op}`);
         }

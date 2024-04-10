@@ -8,41 +8,24 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import { gEnv } from '../env';
-// import { gEnv } from '../env';
 
 export function isRemoveCondition(text: string) {
-    // const builds = text
-    //     .split(',')
-    //     .map((x) => x.trim())
-    //     .filter((x) => x !== '');
-    // if (!builds || builds.length === 0) {
-    //     return false;
-    // }
-
-    // const not = builds.filter((x) => x.startsWith('non-')).map((x) => x.substr(4));
-    // if (not.length > 0) {
-    //     if (not.length > 1 || not.length !== builds.length) {
-    //         throw Error('xml build error');
-    //     }
-    //     return gEnv.checkCondition(not[0]);
-    // }
-
-    // const or = builds.filter((x) => !x.startsWith('non-'));
-    // if (or.length === 0) {
-    //     throw Error('bang');
-    // }
-
-    // for (const condition of or) {
-    //     if (gEnv.checkCondition(condition)) {
-    //         return false;
-    //     }
-    // }
-
-    const m = text.trim().match(/^([><=]+)(\d+)$/);
-    if (!m) {
-        return false;
+    {
+        const m = text.trim().match(/^([><=@]+)(\d+)$/);
+        if (m) {
+            return !gEnv.checkBuild(m[1], m[2]);
+        }
     }
-    return gEnv.checkBuild(m[1], m[2]);
+
+    {
+        const m = text.trim().match(/^(non-)?(.+)$/);
+        if (m) {
+            const ok = gEnv.checkCondition(m[2]);
+            return m[1] === 'non-' ? ok : !ok;
+        }
+    }
+
+    return false;
 }
 
 export function isNeedRemoveNode(node: Element) {

@@ -25,6 +25,35 @@ export class Build {
 
     constructor(private watch = false) {}
 
+    async resolveOutput(buildId: BuildId) {
+        try {
+            const cfg = await fs.readJson(path.resolve(os.homedir(), '.wct.json'));
+            const addonPath = 'Interface/AddOns';
+
+            if (typeof cfg.buildPath === 'string') {
+                return path.resolve(cfg.buildPath, gEnv.getBuildDirName(buildId), addonPath);
+            } else {
+                const data = gEnv.getBuildData(buildId);
+                if (data) {
+                    for (const key of data.atlas) {
+                        if (cfg.buildPath[key]) {
+                            return path.resolve(cfg.buildPath[key], addonPath);
+                        }
+                    }
+
+                    for (const [, p] of Object.entries(cfg.buildPath) as [string, string][]) {
+                        if (p) {
+                            return path.resolve(path.dirname(p), addonPath);
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        }
+        return undefined;
+    }
+
     async run(output: string | undefined, buildId: BuildId) {
         await this.project.init();
 
@@ -33,29 +62,13 @@ export class Build {
             throw Error('error build');
         }
 
+        if (!output) {
+            output = await this.resolveOutput(buildId);
+        }
+
         if (output) {
             this.output = output;
         } else {
-            try {
-                const cfg = await fs.readJson(path.resolve(os.homedir(), '.wct.json'));
-
-                if (typeof cfg.buildPath === 'string') {
-                    this.output = path.join(cfg.buildPath, gEnv.getBuildDirName(buildId) as string, 'Interface/AddOns');
-                } else {
-                    // this.output = path.resolve(cfg.buildPath[buildId], 'Interface/AddOns');
-
-                    for (const [, p] of Object.entries(cfg.buildPath)) {
-                        this.output = path.join(
-                            path.dirname(p as string),
-                            gEnv.getBuildDirName(buildId) as string,
-                            'Interface/AddOns'
-                        );
-                    }
-                }
-            } catch (error) {}
-        }
-
-        if (!this.output) {
             throw Error('Unknown output path');
         }
 

@@ -7,7 +7,7 @@
 
 import * as process from 'process';
 import * as program from 'commander';
-import { BuildId, gEnv } from './lib/env';
+import { gEnv } from './lib/env';
 import { Init } from './init';
 import { Package } from './package';
 import { Publish } from './publish';
@@ -18,7 +18,7 @@ import { Locale } from './locale';
 
 class App {
     optBuilds(args: string[]) {
-        const builds = args.map((x) => gEnv.toBuildId(x)).filter((x) => x !== BuildId.Unknown);
+        const builds = args.map((x) => gEnv.toBuildId(x)).filter((x) => x);
         return builds.length > 0 ? builds : undefined;
     }
 
@@ -53,10 +53,10 @@ class App {
             .arguments('[build]')
             .option('-O --output <output>')
             .description('watch the addon')
-            .action(async (bs: string, opts) => {
-                const buildId = gEnv.toBuildId(bs);
+            .action(async (buildKey: string, opts) => {
+                const buildId = gEnv.toBuildId(buildKey);
                 if (!buildId) {
-                    console.error(`Invalid build id: ${bs}`);
+                    console.error(`Invalid build id: ${buildKey}`);
                     return;
                 }
                 await new Build().run(opts.output, buildId);
@@ -67,10 +67,10 @@ class App {
             .arguments('[build]')
             .option('-O --output <output>')
             .description('watch the addon')
-            .action(async (bs: string, opts: { output?: string }) => {
-                const buildId = gEnv.toBuildId(bs);
+            .action(async (buildKey: string, opts: { output?: string }) => {
+                const buildId = gEnv.toBuildId(buildKey);
                 if (!buildId) {
-                    console.error(`Invalid build id: ${bs}`);
+                    console.error(`Invalid build id: ${buildKey}`);
                     return;
                 }
                 await new Build(true).run(opts.output, buildId);

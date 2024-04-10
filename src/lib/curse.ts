@@ -6,8 +6,7 @@
  */
 
 import * as fs from 'fs-extra';
-import * as FormData from 'form-data';
-import Got from 'got';
+import fetch, { FormData } from 'node-fetch';
 
 export interface GameVersion {
     id: number;
@@ -24,13 +23,13 @@ export class Curse {
     async gameVersions() {
         const url = `${this.base}/game/versions`;
 
-        const resp = await Got.get(url, {
+        const resp = await fetch(url, {
             headers: {
                 'X-Api-Token': this.token,
                 'user-agent': '',
             },
         });
-        return JSON.parse(resp.body) as GameVersion[];
+        return (await resp.json()) as GameVersion[];
     }
 
     async getGameVersionIdByName(name: string) {
@@ -60,9 +59,10 @@ export class Curse {
                 displayName: version,
             })
         );
-        form.append('file', fs.createReadStream(filePath));
+        form.append('file', await fs.readFile(filePath, 'utf-8'));
 
-        const resp = await Got.post(url, {
+        const resp = await fetch(url, {
+            method: 'POST',
             body: form,
             headers: {
                 'X-Api-Token': this.token,
@@ -70,11 +70,11 @@ export class Curse {
             },
         });
 
-        if (resp.statusCode !== 200 || !resp.body) {
+        if (resp.status !== 200) {
             throw Error('upload file failed');
         }
 
-        const body = JSON.parse(resp.body);
+        const body = (await resp.json()) as any;
         if (!body || !body.id) {
             throw Error('upload file failed');
         }
@@ -85,13 +85,19 @@ export class Curse {
     async importLocale(lang: string, data: string) {
         const form = new FormData();
 
-        form.append('metadata', JSON.stringify({ language: lang }));
+        form.append(
+            'metadata',
+            JSON.stringify({
+                language: lang,
+                'missing-phrase-handling': 'DeletePhrase',
+            })
+        );
         form.append('localizations', data);
-        form.append('missing-phrase-handling', 'DeletePhrase');
 
         const url = `${this.base}/projects/${this.curseId}/localization/import`;
 
-        const resp = await Got.post(url, {
+        const resp = await fetch(url, {
+            method: 'POST',
             body: form,
             headers: {
                 'X-Api-Token': this.token,
@@ -99,11 +105,11 @@ export class Curse {
             },
         });
 
-        if (resp.statusCode !== 200 || !resp.body) {
+        if (resp.status !== 200) {
             throw Error('upload locale failed');
         }
 
-        const body = JSON.parse(resp.body);
+        const body = (await resp.json()) as any;
         if (!body || !body.message || body.message !== 'Imported Successfully.') {
             throw Error('upload locale failed');
         }
@@ -117,17 +123,18 @@ export class Curse {
         url.searchParams.append('true-if-value-equals-key', 'true');
 
         try {
-            const resp = await Got.get(url, {
+            const resp = await fetch(url, {
                 headers: {
                     'X-Api-Token': this.token,
                     'user-agent': '',
                 },
             });
 
-            if (resp.statusCode !== 200 || !resp.body) {
+            if (resp.status !== 200) {
                 throw Error('export locale failed');
             }
-            return resp.body;
+
+            return await resp.text();
         } catch {
             console.error(`export locale failed : ${url}`);
         }

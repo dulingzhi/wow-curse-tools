@@ -31,11 +31,11 @@ interface WowPackage {
     curse_id?: number;
     // eslint-disable-next-line camelcase
     old_version_style: boolean;
-    kinds?: string[];
     builds?: BuildMap;
     localizations?: any;
     // eslint-disable-next-line camelcase
     res_filters?: string[];
+    one?: boolean;
 }
 
 export class Project implements Addon {
@@ -50,6 +50,7 @@ export class Project implements Addon {
     private _resFilters: string[] = [];
     private _localeFolder: string = '';
     private _localeIgnores: string[] = [];
+    private _oneBuild: boolean;
 
     constructor(readonly debug = false) {}
 
@@ -93,6 +94,10 @@ export class Project implements Addon {
         return this._localeIgnores;
     }
 
+    get oneBuild() {
+        return this._oneBuild;
+    }
+
     genFileName(buildId: BuildId) {
         if (buildId) {
             const suffix = gEnv.getBuildSuffix(buildId);
@@ -103,13 +108,22 @@ export class Project implements Addon {
         return `${this.name}-${this.version}.zip`;
     }
 
-    private parseWowVersion(t: string) {
-        const mm = t.match(/^(\d*)(\d\d)(\d\d)$/);
-        if (mm) {
-            return `${Number.parseInt(mm[1])}.${Number.parseInt(mm[2])}.${Number.parseInt(mm[3])}`;
+    private toWowVersion(t: string) {
+        const m = t.match(/^(\d*)(\d\d)(\d\d)$/);
+        if (m) {
+            return `${Number.parseInt(m[1])}.${Number.parseInt(m[2])}.${Number.parseInt(m[3])}`;
         }
         return '';
     }
+
+    // private toInterfaceVersion(t: string) {
+    //     console.log(t);
+    //     const m = t.match(/^(\d+)\.(\d+)\.(\d+)\./);
+    //     if (m) {
+    //         return `${m[1]}.${m[2].padStart(2, '0')}.${m[3].padStart(2, '0')}`;
+    //     }
+    //     return '';
+    // }
 
     private parseOldVersionStyle(version: string) {
         const m = version.match(/(\d+)\.(\d+)\.(\d+)-?(\d*)/);
@@ -150,6 +164,7 @@ export class Project implements Addon {
         this._folder = path.resolve('./');
         this._name = p.name;
         this._curseId = p.curse_id || 0;
+        this._oneBuild = p.one || false;
 
         if (!p.old_version_style) {
             this._version = pkg.version;
@@ -164,21 +179,23 @@ export class Project implements Addon {
         if (p.builds) {
             const builds = Object.keys(p.builds)
                 .map((x) => gEnv.toBuildId(x))
-                .filter((x) => x !== BuildId.Unknown);
+                .filter((x) => x);
 
-            for (const [buildIdStr, info] of Object.entries(p.builds)) {
-                const buildId = gEnv.toBuildId(buildIdStr);
-                const buildInfo: BuildInfo = typeof info === 'string' ? { interface: info } : info;
+            for (const [buildKey, info] of Object.entries(p.builds)) {
+                const buildId = gEnv.toBuildId(buildKey);
+                if (buildId) {
+                    const buildInfo = typeof info === 'string' ? { interface: info } : info;
 
-                this._buildEnvs.set(buildId, {
-                    buildId,
-                    buildInfo,
-                    builds,
-                    version: this._version,
-                    debug: this.debug,
-                    wowVersion: this.parseWowVersion(buildInfo.interface),
-                    resFilters: this._resFilters,
-                });
+                    this._buildEnvs.set(buildId, {
+                        buildId,
+                        buildInfo,
+                        builds,
+                        version: this._version,
+                        debug: this.debug,
+                        wowVersion: this.toWowVersion(buildInfo.interface),
+                        resFilters: this._resFilters,
+                    });
+                }
             }
         }
 
@@ -191,7 +208,7 @@ export class Project implements Addon {
                     buildInfo: { interface: m[1] },
                     version: this._version,
                     debug: this.debug,
-                    wowVersion: this.parseWowVersion(m[1]),
+                    wowVersion: this.toWowVersion(m[1]),
                     builds: [],
                     resFilters: this._resFilters,
                 });

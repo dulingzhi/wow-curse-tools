@@ -83,6 +83,10 @@ class EnvManager {
         }
     }
 
+    getBuildData(buildId: BuildId) {
+        return this._buildData.get(buildId);
+    }
+
     toBuildId(key: string) {
         const e = BuildId[key as keyof typeof BuildId];
         if (e && this._buildData?.has(e)) {
@@ -102,7 +106,7 @@ class EnvManager {
     }
 
     getBuildDirName(buildId: BuildId) {
-        return this._buildData.get(buildId)?.path;
+        return this._buildData.get(buildId)?.path as string;
     }
 
     checkCondition(condition: string) {

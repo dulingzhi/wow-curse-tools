@@ -6,7 +6,7 @@
  */
 
 import * as process from 'process';
-import * as program from 'commander';
+import { program } from 'commander';
 import { gEnv } from './lib/env';
 import { Init } from './init';
 import { Package } from './package';

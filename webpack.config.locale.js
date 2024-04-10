@@ -46,11 +46,15 @@ const config = {
             },
         ],
     },
-    externals: {
-        wasmoon: "./wasmoon",
-    },
+    externals: [
+        function ({ request }, callback) {
+            if (request === "wasmoon") {
+                require("./copy")(module.exports.output.path);
+                return callback(null, "./wasmoon");
+            }
+            callback();
+        },
+    ],
 };
-
-require("./copy")(config.output.path);
 
 module.exports = config;

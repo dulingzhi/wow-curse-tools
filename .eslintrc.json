@@ -51,7 +51,19 @@
     "eqeqeq": ["error", "always"],
     "space-before-blocks": ["error", "always"],
     "generator-star-spacing": ["error", { "before": false, "after": true }],
-    "@typescript-eslint/no-unused-vars": ["error"],
-    "@typescript-eslint/no-require-imports": "error"
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "vars": "all",
+        "args": "after-used",
+        "ignoreRestSiblings": false
+      }
+    ],
+    "@typescript-eslint/no-require-imports": [
+      "error",
+      {
+        "ignore": ["some-package"]
+      }
+    ]
   }
 }

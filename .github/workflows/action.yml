@@ -36,14 +36,14 @@ jobs:
         run: npm run action
 
       - name: Commit curse-locale-action
-        uses: Andro999b/push@v1.3
+        uses: EndBug/add-and-commit@v9
         with:
-          directory: actions/curse-locale-action
-          github_token: ${{ github.token }}
+          cwd: actions/curse-locale-action
+          message: "auto build"
 
       - name: Commit curse-publish-action
-        uses: Andro999b/push@v1.3
+        uses: EndBug/add-and-commit@v9
         with:
-          directory: actions/curse-publish-action
-          github_token: ${{ github.token }}
+          cwd: actions/curse-locale-action
+          message: "auto build"
 

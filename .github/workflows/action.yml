@@ -29,6 +29,9 @@ jobs:
         with:
           node-version: 20
 
+      - name: npm install
+        run: npm install
+
       - name: Build actions
         run: npm run action
 

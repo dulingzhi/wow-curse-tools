@@ -2,3 +2,4 @@ node_modules/
 temp/
 dist/
 *.tgz
+/src/lib/proto/**.d.ts

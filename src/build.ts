@@ -16,6 +16,7 @@ import { gCompilerManager } from './lib/compiler';
 import { BuildId, gEnv } from './lib/env';
 import { copyFile, isListFile, writeFile } from './lib/util';
 import { Mutex } from 'async-mutex';
+import { proto_database } from './lib/proto/product.proto';
 
 export class Build {
     private output: string;
@@ -32,19 +33,40 @@ export class Build {
 
             if (typeof cfg.buildPath === 'string') {
                 return path.resolve(cfg.buildPath, gEnv.getBuildDirName(buildId), addonPath);
-            } else {
-                const data = gEnv.getBuildData(buildId);
-                if (data) {
-                    for (const key of data.atlas) {
-                        if (cfg.buildPath[key]) {
-                            return path.resolve(cfg.buildPath[key], addonPath);
-                        }
-                    }
+            }
 
-                    for (const [, p] of Object.entries(cfg.buildPath) as [string, string][]) {
-                        if (p) {
-                            return path.resolve(path.dirname(p), addonPath);
+            const data = gEnv.getBuildData(buildId);
+            if (data) {
+                const p = (() => {
+                    if (os.type() === 'Windows_NT') {
+                        return process.env.programdata
+                            ? path.resolve(process.env.programdata, 'Battle.net/Agent/product.db')
+                            : undefined;
+                    } else if (os.type() === 'Darwin') {
+                        return '/Users/Shared/Battle.net/Agent/product.db';
+                    }
+                    return undefined;
+                })();
+
+                if (p) {
+                    try {
+                        const db = proto_database.Database.decode(await fs.readFile(p));
+                        const install = db.productInstall.find((p) => p.productCode === data?.product);
+                        if (install && install.settings?.installPath) {
+                            return path.resolve(install.settings.installPath, addonPath);
                         }
+                    } catch {}
+                }
+
+                for (const key of data.atlas) {
+                    if (cfg.buildPath[key]) {
+                        return path.resolve(path.dirname(cfg.buildPath[key]), addonPath);
+                    }
+                }
+
+                for (const [, p] of Object.entries(cfg.buildPath) as [string, string][]) {
+                    if (p) {
+                        return path.resolve(path.dirname(p), addonPath);
                     }
                 }
             }

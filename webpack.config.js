@@ -44,6 +44,22 @@ const config = {
                     },
                 ],
             },
+            {
+                test: /\.proto$/,
+                exclude: /node_modules/,
+                use: [
+                    {
+                        loader: "protobufjs-loader",
+                        options: {
+                            paths: ["src/lib/proto/product.proto"],
+                            pbjsArgs: ["--no-encode"],
+                            pbts: {
+                                args: ["--no-comments"],
+                            },
+                        },
+                    },
+                ],
+            },
         ],
     },
     externals: {

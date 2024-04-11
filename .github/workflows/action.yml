@@ -16,13 +16,13 @@ jobs:
       - name: Checkout curse-locale-action
         uses: actions/checkout@v4
         with:
-          repository: DengSir/curse-locale-action
+          repository: git@github.com:DengSir/curse-locale-action.git
           path: actions/curse-locale-action
 
       - name: Checkout curse-publish-action
         uses: actions/checkout@v4
         with:
-          repository: DengSir/curse-publish-action
+          repository: git@github.com:DengSir/curse-publish-action.git
           path: actions/curse-publish-action
 
       - uses: actions/setup-node@v4

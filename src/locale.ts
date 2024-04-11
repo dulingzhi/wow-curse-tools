@@ -129,7 +129,12 @@ export class Locale {
             oldFiles: this.project.localizations.map((l) => l.path),
         };
 
-        const factory = new LuaFactory();
+        const factory = new LuaFactory(
+            (() => {
+                const p = path.join(__dirname, 'glue.wasm');
+                return fs.existsSync(p) ? p : undefined;
+            })()
+        );
 
         await factory.mountFile('locale.lua', (await import('./lua/locale.lua')).default);
         await factory.mountFile('llex.lua', (await import('./lua/llex.lua')).default);

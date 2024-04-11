@@ -1,0 +1,44 @@
+name: "Push to actions"
+on:
+  push:
+    branches:
+      - master
+    tags-ignore:
+      - '*'
+
+jobs:
+  push_actions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout curse-locale-action
+        uses: actions/checkout@v4
+        with:
+          repository: DengSir/curse-locale-action
+          path: actions/curse-locale-action
+
+      - name: Checkout curse-publish-action
+        uses: actions/checkout@v4
+        with:
+          repository: DengSir/curse-publish-action
+          path: actions/curse-publish-action
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build actions
+        run: npm run action
+
+      - name: Commit curse-locale-action
+        uses: Andro999b/push@v1.3
+        with:
+          directory: actions/curse-locale-action
+
+      - name: Commit curse-publish-action
+        uses: Andro999b/push@v1.3
+        with:
+          directory: actions/curse-publish-action
+

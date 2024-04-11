@@ -39,9 +39,11 @@ jobs:
         uses: Andro999b/push@v1.3
         with:
           directory: actions/curse-locale-action
+          github_token: ${{ github.token }}
 
       - name: Commit curse-publish-action
         uses: Andro999b/push@v1.3
         with:
           directory: actions/curse-publish-action
+          github_token: ${{ github.token }}
 

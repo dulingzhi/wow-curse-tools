@@ -41,40 +41,53 @@ export class Locale {
         await this.init();
 
         const cli = new Curse(this.project.curseId, this.token);
-
         const files = await this.project.allFiles();
 
         for (const file of files) {
             if (file.path.endsWith('.lua')) {
                 let body = await fs.readFile(file.path, 'utf-8');
 
-                if (body) {
-                    const replaces = [];
+                body = body.replace(/[\r\n]+/g, '\n');
 
-                    for (const m of body.matchAll(/--\s*@locale:(.+)@([.\s]*)--\s*@end-locale@/g)) {
-                        const args = Object.fromEntries(
-                            m[1].split(';').map((n) => n.trim().split('=') as [string, string])
-                        );
+                const sb = [];
 
-                        const locale = await cli.exportLocale(args.language, args.type || undefined);
-                        const eol = body.indexOf('\r\n') > 0 ? '\r\n' : '\n';
+                const lines = body.split(/[\r\n]+/);
+                let currentOpts: Map<string, string> | undefined;
 
-                        replaces.push({
-                            index: m.index || 0,
-                            source: m[0],
-                            target: m[0].replace(m[2], eol + locale + eol),
-                        });
-                    }
-
-                    if (replaces.length > 0) {
-                        replaces.sort((a, b) => b.index - a.index);
-
-                        for (const n of replaces) {
-                            body = body.replace(n.source, n.target);
+                for (const line of lines) {
+                    const m = line.trim().match(/^--\s*@locale:(?<opts>.+)@$/);
+                    if (m) {
+                        const opts = new Map(m.groups?.opts.split(';').map((x) => x.split('=', 2) as [string, string]));
+                        if (opts.get('language')) {
+                            currentOpts = opts;
                         }
 
-                        fs.writeFile(file.path, body);
+                        sb.push(line);
                     }
+
+                    if (currentOpts) {
+                        const m = line.trim().match(/^--\s*@end-locale@$/);
+                        if (m) {
+                            sb.push(
+                                (
+                                    await cli.exportLocale(
+                                        currentOpts.get('language')!,
+                                        currentOpts.get('type') || undefined
+                                    )
+                                ).trim()
+                            );
+                            currentOpts = undefined;
+                            sb.push(line);
+                        }
+                    } else {
+                        sb.push(line);
+                    }
+                }
+
+                const newBody = sb.join('\n');
+
+                if (newBody !== body) {
+                    await fs.writeFile(file.path, newBody);
                 }
             }
         }
@@ -116,7 +129,7 @@ export class Locale {
             oldFiles: this.project.localizations.map((l) => l.path),
         };
 
-        const factory = new LuaFactory(path.join(__dirname, 'glue.wasm'));
+        const factory = new LuaFactory();
 
         await factory.mountFile('locale.lua', (await import('./lua/locale.lua')).default);
         await factory.mountFile('llex.lua', (await import('./lua/llex.lua')).default);

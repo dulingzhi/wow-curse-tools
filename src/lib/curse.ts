@@ -6,7 +6,6 @@
  */
 
 import * as fs from 'fs-extra';
-import fetch, { FormData } from 'node-fetch';
 
 export interface GameVersion {
     id: number;
@@ -17,6 +16,8 @@ export interface GameVersion {
 
 export class Curse {
     private base = 'https://wow.curseforge.com/api';
+    private agent =
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0';
 
     constructor(private curseId: number, private token: string) {}
 
@@ -26,7 +27,7 @@ export class Curse {
         const resp = await fetch(url, {
             headers: {
                 'X-Api-Token': this.token,
-                'user-agent': '',
+                'user-agent': this.agent,
             },
         });
         return (await resp.json()) as GameVersion[];
@@ -66,7 +67,7 @@ export class Curse {
             body: form,
             headers: {
                 'X-Api-Token': this.token,
-                'user-agent': '',
+                'user-agent': this.agent,
             },
         });
 
@@ -101,7 +102,7 @@ export class Curse {
             body: form,
             headers: {
                 'X-Api-Token': this.token,
-                'user-agent': '',
+                'user-agent': this.agent,
             },
         });
 
@@ -126,7 +127,7 @@ export class Curse {
             const resp = await fetch(url, {
                 headers: {
                     'X-Api-Token': this.token,
-                    'user-agent': '',
+                    'user-agent': this.agent,
                 },
             });
 

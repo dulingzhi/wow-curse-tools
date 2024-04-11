@@ -20,6 +20,8 @@ async function run() {
 
     console.log('Export locales');
     await locale.export();
+
+    console.log('Locale done');
 }
 
 run();

@@ -82,3 +82,19 @@ export async function readChangeLog(file: string, version: string) {
     }
     return lines.join('\n');
 }
+
+export function toWowVersion(t: string) {
+    const m = t.match(/^(\d*)(\d\d)(\d\d)$/);
+    if (m) {
+        return `${Number.parseInt(m[1])}.${Number.parseInt(m[2])}.${Number.parseInt(m[3])}`;
+    }
+    return '';
+}
+
+export function toInterfaceVersion(t: string) {
+    const m = t.match(/^(\d+)\.(\d+)\.(\d+)\./);
+    if (m) {
+        return `${m[1]}${m[2].padStart(2, '0')}${m[3].padStart(2, '0')}`;
+    }
+    return '';
+}

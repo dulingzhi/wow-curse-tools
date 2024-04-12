@@ -11,9 +11,10 @@ export interface BuildInfo {
 
 export enum BuildId {
     Unknown = 0,
-    Mainline,
     Vanilla,
     Wrath,
+    Cata,
+    Mainline,
 }
 
 export interface Env {
@@ -45,6 +46,12 @@ const BUILD_DATA = {
         suffix: 'Wrath',
         atlas: ['lkc', 'wrath', 'WOTLKC', 'Wrath'],
         product: 'wow_classic',
+    },
+    Cata: {
+        path: '_classic_',
+        suffix: 'Cata',
+        atlas: ['cata', 'ctm'],
+        product: 'wow_classic_beta',
     },
     Mainline: {
         path: '_retail_',

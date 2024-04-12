@@ -10,6 +10,7 @@ import * as fs from 'fs-extra';
 import { BuildId, BuildInfo, Env, gEnv } from './env';
 import { findFiles } from './files';
 import { readChangeLog, readFile } from './util';
+import { toWowVersion } from './util';
 
 interface Addon {
     name: string;
@@ -108,23 +109,6 @@ export class Project implements Addon {
         return `${this.name}-${this.version}.zip`;
     }
 
-    private toWowVersion(t: string) {
-        const m = t.match(/^(\d*)(\d\d)(\d\d)$/);
-        if (m) {
-            return `${Number.parseInt(m[1])}.${Number.parseInt(m[2])}.${Number.parseInt(m[3])}`;
-        }
-        return '';
-    }
-
-    // private toInterfaceVersion(t: string) {
-    //     console.log(t);
-    //     const m = t.match(/^(\d+)\.(\d+)\.(\d+)\./);
-    //     if (m) {
-    //         return `${m[1]}.${m[2].padStart(2, '0')}.${m[3].padStart(2, '0')}`;
-    //     }
-    //     return '';
-    // }
-
     private parseOldVersionStyle(version: string) {
         const m = version.match(/(\d+)\.(\d+)\.(\d+)-?(\d*)/);
         if (!m) {
@@ -192,7 +176,7 @@ export class Project implements Addon {
                         builds,
                         version: this._version,
                         debug: this.debug,
-                        wowVersion: this.toWowVersion(buildInfo.interface),
+                        wowVersion: toWowVersion(buildInfo.interface),
                         resFilters: this._resFilters,
                     });
                 }
@@ -208,7 +192,7 @@ export class Project implements Addon {
                     buildInfo: { interface: m[1] },
                     version: this._version,
                     debug: this.debug,
-                    wowVersion: this.toWowVersion(m[1]),
+                    wowVersion: toWowVersion(m[1]),
                     builds: [],
                     resFilters: this._resFilters,
                 });

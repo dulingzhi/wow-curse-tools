@@ -16,7 +16,7 @@ jobs:
       - name: Checkout curse-locale-action
         uses: actions/checkout@v4
         with:
-          repository: DengSir/curse-locale-action
+          repository: curse-action/locale
           path: curse-action/locale
           token: ${{ secrets.PAT }}
 

@@ -4,5 +4,8 @@ temp/
 .editorconfig
 .eslintrc.json
 tsconfig.json
-webpack.config.js
+webpack.config.*
 *.tgz
+copy.js
+typings/
+.github/

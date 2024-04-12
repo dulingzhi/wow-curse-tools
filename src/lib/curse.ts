@@ -60,7 +60,7 @@ export class Curse {
                 displayName: version,
             })
         );
-        form.append('file', await fs.readFile(filePath, 'utf-8'));
+        form.append('file', new Blob([await fs.readFile(filePath)]));
 
         const resp = await fetch(url, {
             method: 'POST',

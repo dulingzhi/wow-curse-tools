@@ -65,6 +65,10 @@ class EnvManager {
         return this._env;
     }
 
+    get buildData() {
+        return this._buildData;
+    }
+
     setEnv(env: Env) {
         this._env = env;
         this._conditions = new Map<string, boolean>([

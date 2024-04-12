@@ -27,16 +27,36 @@ export class Build {
     constructor(private watch = false) {}
 
     async resolveOutput(buildId: BuildId) {
-        const addonPath = path.join(gEnv.getBuildDirName(buildId), 'Interface/AddOns');
-
-        const cfg = await fs.readJson(path.resolve(os.homedir(), '.wct.json'));
-        if (typeof cfg.buildPath === 'string') {
-            return path.resolve(cfg.buildPath, addonPath);
+        const buildData = gEnv.getBuildData(buildId);
+        if (!buildData) {
+            return undefined;
         }
 
-        const data = gEnv.getBuildData(buildId);
-        if (data) {
-            const p = (() => {
+        const buildFolder = buildData.path;
+        const addonPath = 'Interface/AddOns';
+
+        {
+            const configPath = path.resolve(os.homedir(), '.wct.json');
+            if (await fs.pathExists(configPath)) {
+                try {
+                    const cfg = await fs.readJson(configPath);
+                    if (typeof cfg.buildPath === 'object') {
+                        if (cfg.buildPath[BuildId[buildId]]) {
+                            return path.resolve(cfg.buildPath[BuildId[buildId]], addonPath);
+                        }
+
+                        for (const k of buildData.atlas) {
+                            if (cfg.buildPath[k]) {
+                                return path.resolve(cfg.buildPath[k], addonPath);
+                            }
+                        }
+                    }
+                } catch {}
+            }
+        }
+
+        {
+            const productFilePath = (() => {
                 if (os.type() === 'Windows_NT') {
                     return process.env.programdata
                         ? path.resolve(process.env.programdata, 'Battle.net/Agent/product.db')
@@ -46,30 +66,18 @@ export class Build {
                 }
                 return undefined;
             })();
-
-            if (p) {
+            if (productFilePath && (await fs.pathExists(productFilePath))) {
                 try {
-                    const db = proto_database.Database.decode(await fs.readFile(p));
-                    const install = db.productInstall.find((p) => p.productCode === data.product);
+                    const db = proto_database.Database.decode(await fs.readFile(productFilePath));
+                    const install = db.productInstall.find((p) => p.productCode === buildData.product);
                     if (install && install.settings?.installPath) {
-                        return path.resolve(install.settings.installPath, addonPath);
+                        return path.resolve(install.settings.installPath, buildFolder, addonPath);
                     }
                 } catch {}
             }
-
-            for (const key of data.atlas) {
-                if (cfg.buildPath[key]) {
-                    return path.resolve(path.dirname(cfg.buildPath[key]), addonPath);
-                }
-            }
-
-            for (const [, p] of Object.entries(cfg.buildPath) as [string, string][]) {
-                if (p) {
-                    return path.resolve(path.dirname(p), addonPath);
-                }
-            }
         }
-        return undefined;
+
+        throw Error('resolve output path error');
     }
 
     async run(output: string | undefined, buildId: BuildId) {

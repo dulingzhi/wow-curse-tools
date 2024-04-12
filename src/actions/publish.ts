@@ -6,7 +6,7 @@
  */
 
 import * as core from '@actions/core';
-import { Publish } from '../publish';
+import { Publish } from '../commands/publish';
 
 async function run() {
     const token = core.getInput('token', { required: true });

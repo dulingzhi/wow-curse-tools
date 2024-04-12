@@ -6,10 +6,10 @@
  */
 
 import * as fs from 'fs-extra';
-import { Flusher } from './lib/flusher';
-import { Curse } from './lib/curse';
-import { Project } from './lib/project';
-import { BuildId } from './lib/env';
+import { Flusher } from '../lib/flusher';
+import { Curse } from '../lib/curse';
+import { Project } from '../lib/project';
+import { BuildId } from '../lib/env';
 
 export interface PublishOptions {
     token: string;

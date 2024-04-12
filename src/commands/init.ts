@@ -11,8 +11,8 @@ import { decode as htmldecode } from 'html-entities';
 
 import inquirer from 'inquirer';
 
-import { BuildId, gEnv } from './lib/env';
-import { toInterfaceVersion } from './lib/util';
+import { BuildId, gEnv } from '../lib/env';
+import { toInterfaceVersion } from '../lib/util';
 
 export class Init {
     constructor() {}

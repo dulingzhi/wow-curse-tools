@@ -10,13 +10,13 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as Watcher from 'watcher';
 
-import { Project } from './lib/project';
-import { File } from './lib/files';
-import { gCompilerManager } from './lib/compiler';
-import { BuildId, gEnv } from './lib/env';
-import { copyFile, isListFile, writeFile } from './lib/util';
+import { Project } from '../lib/project';
+import { File } from '../lib/files';
+import { gCompilerManager } from '../lib/compiler';
+import { BuildId, gEnv } from '../lib/env';
+import { copyFile, isListFile, writeFile } from '../lib/util';
 import { Mutex } from 'async-mutex';
-import { proto_database } from './lib/proto/product.proto';
+import { proto_database } from '../lib/proto/product.proto';
 
 export class Build {
     private output: string;

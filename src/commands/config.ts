@@ -8,9 +8,9 @@
 import * as os from 'os';
 import * as fs from 'fs-extra';
 import inquirer from 'inquirer';
-import { BuildId, gEnv } from './lib/env';
+import { BuildId, gEnv } from '../lib/env';
 import path = require('path');
-import { proto_database } from './lib/proto/product.proto';
+import { proto_database } from '../lib/proto/product.proto';
 
 enum WhichConfig {
     None,

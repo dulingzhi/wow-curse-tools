@@ -8,13 +8,13 @@
 import * as process from 'process';
 import { program } from 'commander';
 import { gEnv } from './lib/env';
-import { Init } from './init';
-import { Package } from './package';
-import { Publish } from './publish';
-import { Build } from './build';
-import { Emmy } from './emmy';
-import { Config } from './config';
-import { Locale } from './locale';
+import { Init } from './commands/init';
+import { Package } from './commands/package';
+import { Publish } from './commands/publish';
+import { Build } from './commands/build';
+import { Emmy } from './commands/emmy';
+import { Config } from './commands/config';
+import { Locale } from './commands/locale';
 
 class App {
     optBuilds(args: string[]) {

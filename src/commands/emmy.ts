@@ -11,11 +11,11 @@ import * as luaparse from 'luaparse';
 
 import { DOMParser } from '@xmldom/xmldom';
 
-import { File, findFiles } from './lib/files';
-import { Project } from './lib/project';
-import { readFile } from './lib/util';
+import { File, findFiles } from '../lib/files';
+import { Project } from '../lib/project';
+import { readFile } from '../lib/util';
 import { Identifier } from 'luaparse';
-import { gEnv } from './lib/env';
+import { gEnv } from '../lib/env';
 
 const GLOBAL_INGORES = new Set(['Font', 'FontString', 'FontFamily', 'Texture', 'Script', 'Include']);
 

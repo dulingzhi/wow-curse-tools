@@ -7,10 +7,10 @@
 
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { Project } from './lib/project';
-import { gEnv } from './lib/env';
-import { Curse } from './lib/curse';
-import { readLocale } from './lib/locale';
+import { Project } from '../lib/project';
+import { gEnv } from '../lib/env';
+import { Curse } from '../lib/curse';
+import { readLocale } from '../lib/locale';
 import { LuaFactory, LuaType } from 'wasmoon';
 
 function isInFolder(p: string, f: string) {
@@ -136,8 +136,8 @@ export class Locale {
             })()
         );
 
-        await factory.mountFile('locale.lua', (await import('./lua/locale.lua')).default);
-        await factory.mountFile('llex.lua', (await import('./lua/llex.lua')).default);
+        await factory.mountFile('locale.lua', (await import('../lua/locale.lua')).default);
+        await factory.mountFile('llex.lua', (await import('../lua/llex.lua')).default);
 
         const lua = await factory.createEngine();
 

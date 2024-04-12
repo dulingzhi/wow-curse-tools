@@ -5,9 +5,9 @@
  * @Date   : 5/6/2021, 5:48:39 PM
  */
 
-import { BuildId } from './lib/env';
-import { Flusher } from './lib/flusher';
-import { Project } from './lib/project';
+import { BuildId } from '../lib/env';
+import { Flusher } from '../lib/flusher';
+import { Project } from '../lib/project';
 
 export class Package {
     async run(builds?: BuildId[]) {

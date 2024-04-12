@@ -6,7 +6,7 @@
  */
 
 import * as core from '@actions/core';
-import { Locale } from '../locale';
+import { Locale } from '../commands/locale';
 
 async function run() {
     const token = core.getInput('token', { required: true });

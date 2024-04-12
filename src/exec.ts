@@ -15,6 +15,7 @@ import { Build } from './commands/build';
 import { Emmy } from './commands/emmy';
 import { Config } from './commands/config';
 import { Locale } from './commands/locale';
+import { Update } from './commands/update';
 
 class App {
     optBuilds(args: string[]) {
@@ -91,6 +92,14 @@ class App {
             .description('config wct')
             .action(async () => {
                 await new Config().run();
+            });
+
+        program
+            .command('update')
+            .description('Update your code')
+            .arguments('root')
+            .action(async (root) => {
+                await new Update().run(root);
             });
 
         {

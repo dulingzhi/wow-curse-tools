@@ -44,7 +44,7 @@ const BUILD_DATA = {
     Wrath: {
         path: '_classic_',
         suffix: 'Wrath',
-        atlas: ['lkc', 'wrath', 'WOTLKC', 'Wrath'],
+        atlas: ['lkc', 'wrath', 'WOTLKC', 'Wrath', 'wlk'],
         product: 'wow_classic',
     },
     Cata: {

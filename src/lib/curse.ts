@@ -6,6 +6,7 @@
  */
 
 import * as fs from 'fs-extra';
+import * as path from 'path';
 
 export interface GameVersion {
     id: number;
@@ -60,7 +61,7 @@ export class Curse {
                 displayName: version,
             })
         );
-        form.append('file', new Blob([await fs.readFile(filePath)]));
+        form.append('file', new File([await fs.readFile(filePath)], path.basename(filePath)));
 
         const resp = await fetch(url, {
             method: 'POST',

@@ -12,7 +12,7 @@ const config = {
         index: "./src/actions/update.ts",
     },
     output: {
-        path: path.resolve(__dirname, "actions/curse-update-action"),
+        path: path.resolve(__dirname, "actions/update"),
         filename: "[name].js",
         libraryTarget: "commonjs2",
         devtoolModuleFilenameTemplate: "../[resource-path]",

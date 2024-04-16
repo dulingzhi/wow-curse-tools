@@ -16,6 +16,11 @@ interface Zip {
     entries: yauzl.Entry[];
 }
 
+interface RemoteInfo {
+    url?: string;
+    hash?: string;
+}
+
 class RemoteManager {
     private remoteFiles = new Map<string, Zip>();
     private file = 'libs.json';
@@ -23,6 +28,7 @@ class RemoteManager {
     private curseIds = new Map<string, number>();
     private throttled = false;
     private fetched = new Set<string>();
+    private remoteCache = new Map<string, RemoteInfo>();
 
     constructor() {
         if (fs.pathExistsSync(this.file)) {
@@ -62,7 +68,7 @@ class RemoteManager {
         });
     }
 
-    private async getRemoteInfo(remote: string) {
+    private async getRemoteInfoImpl(remote: string): Promise<RemoteInfo> {
         const [type, name, ref] = remote.split('@');
         if (type === 'curse') {
             const curseId = this.curseIds.get(remote);
@@ -80,10 +86,10 @@ class RemoteManager {
                 throw new Error('No release file');
             }
 
-            return [
-                file.downloadUrl,
-                file.hashes.find((x) => x.algo === 2)?.value || file.fileFingerprint.toString(16),
-            ];
+            return {
+                url: file.downloadUrl,
+                hash: file.hashes.find((x) => x.algo === 2)?.value || file.fileFingerprint.toString(16),
+            };
         } else if (type === 'github') {
             const o = new Octokit();
             const [owner, repo] = name.split('/');
@@ -93,7 +99,7 @@ class RemoteManager {
                     if (d) {
                         const asset = d.data.assets.find((x) => x.name.endsWith('.zip'));
                         if (asset) {
-                            return [asset.browser_download_url, d.data.target_commitish];
+                            return { url: asset.browser_download_url, hash: d.data.target_commitish };
                         }
                     }
                 } catch {}
@@ -103,38 +109,67 @@ class RemoteManager {
                     if (d) {
                         const tag = d.data[0];
                         if (tag) {
-                            return [tag.zipball_url, tag.commit.sha];
+                            return { url: tag.zipball_url, hash: tag.commit.sha };
                         }
                     }
                 } catch {}
             } else {
                 try {
+                    // releases
                     const d = await o.repos.getReleaseByTag({ owner, repo, tag: ref });
                     if (d) {
                         const asset = d.data.assets.find((x) => x.name.endsWith('.zip'));
                         if (asset) {
-                            return [asset.browser_download_url, d.data.target_commitish];
+                            return { url: asset.browser_download_url, hash: d.data.target_commitish };
                         }
                     }
                 } catch {}
+
                 try {
+                    // tags
                     const d = await o.repos.listTags({ owner, repo });
                     const tag = d.data.find((x) => x.name === ref);
                     if (tag) {
-                        return [tag.zipball_url, tag.commit.sha];
+                        return { url: tag.zipball_url, hash: tag.commit.sha };
                     }
                 } catch {}
+
                 try {
+                    // branches
                     const d = await o.repos.getBranch({ owner, repo, branch: ref });
                     if (d) {
-                        return [`https://github.com/${owner}/${repo}/archive/refs/heads/${ref}.zip`, d.data.commit.sha];
+                        return {
+                            url: `https://github.com/${owner}/${repo}/archive/refs/heads/${ref}.zip`,
+                            hash: d.data.commit.sha,
+                        };
                     }
-                } catch (e) {
-                    console.log(e);
-                }
+                } catch {}
+
+                try {
+                    // commits
+                    const d = await o.repos.getCommit({ owner, repo, ref });
+                    if (d) {
+                        return {
+                            url: `https://github.com/DengSir/LibClass-2.0/archive/${d.data.sha}.zip`,
+                            hash: d.data.sha,
+                        };
+                    }
+                } catch {}
             }
         }
-        return [undefined, undefined];
+        return {};
+    }
+
+    private async getRemoteInfo(remote: string) {
+        if (this.remoteCache.has(remote)) {
+            return this.remoteCache.get(remote) as RemoteInfo;
+        }
+
+        const info = await this.getRemoteInfoImpl(remote);
+        if (info.url && info.hash) {
+            this.remoteCache.set(remote, info);
+        }
+        return info;
     }
 
     private async getZipFile(remote: string) {
@@ -142,7 +177,7 @@ class RemoteManager {
             return;
         }
         if (!this.remoteFiles.has(remote) && !this.fetched.has(remote)) {
-            const [url, hash] = await this.getRemoteInfo(remote);
+            const { url, hash } = await this.getRemoteInfo(remote);
 
             if (!url) {
                 console.log(`not found ${remote}`);
@@ -181,10 +216,10 @@ class RemoteManager {
 
                     this.hashes.set(remote, hash);
                     this.remoteFiles.set(remote, { zip, entries });
-                    this.saveCache();
                 } catch {}
             } else {
             }
+            this.saveCache();
         }
         return this.remoteFiles.get(remote);
     }

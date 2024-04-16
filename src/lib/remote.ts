@@ -159,7 +159,7 @@ class RemoteManager {
                 this.fetched.add(remote);
 
                 try {
-                    console.log(`Download ${url}, hash: ${hash}`);
+                    console.log(`Download (${url}), hash: (${hash})`);
 
                     const entries: yauzl.Entry[] = [];
                     let buffer: ArrayBuffer;
@@ -169,10 +169,10 @@ class RemoteManager {
                     } catch (e) {
                         console.log(e);
                     }
-                    const zip: yauzl.ZipFile = await new Promise((resolve) => {
+                    const zip: yauzl.ZipFile = await new Promise((resolve, reject) => {
                         yauzl.fromBuffer(Buffer.from(buffer), { lazyEntries: true }, (err, zip) => {
                             if (err) {
-                                throw err;
+                                reject(err);
                             }
                             zip.on('entry', (entry) => {
                                 entries.push(entry);
@@ -184,6 +184,8 @@ class RemoteManager {
                             zip.readEntry();
                         });
                     });
+
+                    console.log(`Download ok`);
 
                     this.hashes.set(remote, hash);
                     this.remoteFiles.set(remote, { zip, entries });

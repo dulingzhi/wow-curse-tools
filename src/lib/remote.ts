@@ -5,7 +5,6 @@
  * @Date   : 4/15/2024, 6:16:48 PM
  */
 
-import * as os from 'os';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as yauzl from 'yauzl';

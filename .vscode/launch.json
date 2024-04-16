@@ -10,9 +10,9 @@
       "name": "Launch Program",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}\\dist\\exec.js",
-      "cwd": "H:\\wow\\addon\\tdInspect",
+      "cwd": "H:\\wow\\addon\\tdBag2",
       // "console": "externalTerminal",
-      "args": ["update", "Libs"],
+      "args": ["build", "classic"],
       "preLaunchTask": "webpack: watch",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"]
     }

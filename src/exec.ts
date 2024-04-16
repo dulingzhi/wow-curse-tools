@@ -97,9 +97,8 @@ class App {
         program
             .command('update')
             .description('Update your code')
-            .arguments('root')
-            .action(async (root) => {
-                await new Update().run(root);
+            .action(async () => {
+                await new Update().run();
             });
 
         {

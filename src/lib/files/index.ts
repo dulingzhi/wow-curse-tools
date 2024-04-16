@@ -9,15 +9,23 @@ import * as fs from 'fs-extra';
 import { CodeFilesFinder } from './code';
 import { ResFilesFinder } from './res';
 
+export interface Remote {
+    type: 'curse' | 'github';
+    repo: string;
+    path: string;
+    tag?: string;
+}
+
 export interface File {
     path: string;
     relative: string;
     noCompile: boolean;
+    remote?: Remote;
 }
 
-export async function findFiles(folder: string, name: string): Promise<File[]> {
+export async function findFiles(folder: string, name: string, fetchRemote = false): Promise<File[]> {
     const filePaths = [
-        ...(await new CodeFilesFinder().findFiles(path.resolve(folder, name + '.toc'))),
+        ...(await new CodeFilesFinder(fetchRemote).findFiles(path.resolve(folder, name + '.toc'))),
         ...(await new ResFilesFinder().findFiles(folder)),
     ];
 

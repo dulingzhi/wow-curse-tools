@@ -37,6 +37,8 @@ export class XmlCompiler implements Compiler {
                     }
 
                     node.removeAttributeNode(attr);
+                } else if (attr.name === 'remote' || attr.name === 'remote-file') {
+                    node.removeAttributeNode(attr);
                 }
             }
         }

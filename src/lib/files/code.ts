@@ -11,9 +11,12 @@ import * as fs from 'fs-extra';
 import { DOMParser } from '@xmldom/xmldom';
 import { isNeedRemoveNode, readFile } from '../util';
 import { gEnv } from '../env';
+import { gRemote } from '../remote';
 
 export class CodeFilesFinder {
     private _paths = new Set<string>();
+
+    constructor(private fetchRemote = false) {}
 
     private parseFileName(name: string) {
         return name.replace(/\\+/g, '/');
@@ -31,7 +34,7 @@ export class CodeFilesFinder {
         }
     }
 
-    private async parseXml(filePath: string) {
+    private async parseXml(filePath: string, parentRemote?: string) {
         const folder = path.dirname(path.resolve(filePath));
 
         const parseNodes = async (nodes: HTMLCollectionOf<Element>) => {
@@ -40,7 +43,18 @@ export class CodeFilesFinder {
                 if (element && !isNeedRemoveNode(element)) {
                     const f = element.getAttribute('file');
                     if (f) {
-                        await this.parseFile(path.resolve(folder, this.parseFileName(f)));
+                        const remote = this.fetchRemote ? element.getAttribute('remote') || parentRemote : undefined;
+                        if (remote) {
+                            const buf = await gRemote.getFile(remote, element.getAttribute('remote-file') || f);
+                            if (buf) {
+                                const filePath = path.resolve(folder, this.parseFileName(f));
+                                await fs.mkdirp(path.dirname(filePath));
+                                await fs.writeFile(path.resolve(folder, this.parseFileName(f)), buf);
+
+                                console.log(`Unpack ${filePath}`);
+                            }
+                        }
+                        await this.parseFile(path.resolve(folder, this.parseFileName(f)), remote);
                     }
                 }
             }
@@ -68,7 +82,7 @@ export class CodeFilesFinder {
         await parseNodes(root.getElementsByTagName('Script'));
     }
 
-    private async parseFile(filePath: string) {
+    private async parseFile(filePath: string, remote?: string) {
         this._paths.add(path.resolve(filePath));
 
         if (!(await fs.pathExists(filePath))) {
@@ -87,7 +101,7 @@ export class CodeFilesFinder {
                 await this.parseToc(filePath);
                 break;
             case '.xml':
-                await this.parseXml(filePath);
+                await this.parseXml(filePath, remote);
                 break;
             case '.lua':
                 break;

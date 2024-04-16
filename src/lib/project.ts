@@ -128,6 +128,10 @@ export class Project implements Addon {
         return version;
     }
 
+    async fetchRemoteFiles() {
+        return await findFiles(this._folder, this._name, true);
+    }
+
     async findFiles() {
         return await findFiles(this._folder, this._name);
     }

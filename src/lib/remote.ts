@@ -171,6 +171,7 @@ class RemoteManager {
                                 reject(err);
                             }
                             zip.on('entry', (entry) => {
+                                console.log(`  -> Found Entry: (${entry.fileName})`);
                                 entries.push(entry);
                                 zip.readEntry();
                             });

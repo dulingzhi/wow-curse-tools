@@ -54,7 +54,6 @@ export class CodeFilesFinder {
                                 console.log(`Unpack ${filePath}`);
                                 await fs.mkdirp(path.dirname(filePath));
                                 await fs.writeFile(path.resolve(folder, this.parseFileName(f)), buf);
-                                console.log(`Unpack ok`);
                             }
                         }
                         await this.parseFile(path.resolve(folder, this.parseFileName(f)), remote);

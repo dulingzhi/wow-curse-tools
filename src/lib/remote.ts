@@ -179,8 +179,6 @@ class RemoteManager {
                         });
                     });
 
-                    console.log(`Download ok`);
-
                     this.hashes.set(remote, hash);
                     this.remoteFiles.set(remote, { zip, entries });
                     this.saveCache();

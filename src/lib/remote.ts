@@ -40,9 +40,7 @@ class RemoteManager {
             return;
         }
 
-        if (os.type() === 'Windows_NT') {
-            file = file.replace('\\', '/');
-        }
+        file = path.normalize(file);
 
         let entry = zip.entries.find((x) => x.fileName.endsWith(file));
         if (!entry) {

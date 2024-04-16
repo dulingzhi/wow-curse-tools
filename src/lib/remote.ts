@@ -49,12 +49,14 @@ class RemoteManager {
             entry = zip.entries.find((x) => x.fileName.endsWith(path.basename(file)));
         }
         if (!entry) {
+            console.log(`Not found file: ${file}`);
             return;
         }
 
         return await new Promise(async (resolve, reject) => {
             zip.zip.openReadStream(entry, (e, s) => {
                 if (e) {
+                    console.log(`read file failed ${file}`);
                     reject(e);
                     return;
                 }

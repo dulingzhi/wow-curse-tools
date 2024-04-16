@@ -8,10 +8,9 @@
 import { Project } from '../lib/project';
 
 export class Update {
-    private project: Project;
-
     async run() {
-        await this.project.init();
-        await this.project.fetchRemoteFiles();
+        const prj = new Project();
+        await prj.init();
+        await prj.fetchRemoteFiles();
     }
 }

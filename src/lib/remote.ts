@@ -39,8 +39,6 @@ class RemoteManager {
             return;
         }
 
-        file = path.normalize(file);
-
         let entry = zip.entries.find((x) => x.fileName.endsWith(file));
         if (!entry) {
             entry = zip.entries.find((x) => x.fileName.endsWith(path.basename(file)));

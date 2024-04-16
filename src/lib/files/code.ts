@@ -45,7 +45,10 @@ export class CodeFilesFinder {
                     if (f) {
                         const remote = this.fetchRemote ? element.getAttribute('remote') || parentRemote : undefined;
                         if (remote) {
-                            const buf = await gRemote.getFile(remote, element.getAttribute('remote-file') || f);
+                            const buf = await gRemote.getFile(
+                                remote,
+                                this.parseFileName(element.getAttribute('remote-file') || f)
+                            );
                             if (buf) {
                                 const filePath = path.resolve(folder, this.parseFileName(f));
                                 console.log(`Unpack ${filePath}`);

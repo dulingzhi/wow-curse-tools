@@ -48,10 +48,10 @@ export class CodeFilesFinder {
                             const buf = await gRemote.getFile(remote, element.getAttribute('remote-file') || f);
                             if (buf) {
                                 const filePath = path.resolve(folder, this.parseFileName(f));
+                                console.log(`Unpack ${filePath}`);
                                 await fs.mkdirp(path.dirname(filePath));
                                 await fs.writeFile(path.resolve(folder, this.parseFileName(f)), buf);
-
-                                console.log(`Unpack ${filePath}`);
+                                console.log(`Unpack ok`);
                             }
                         }
                         await this.parseFile(path.resolve(folder, this.parseFileName(f)), remote);

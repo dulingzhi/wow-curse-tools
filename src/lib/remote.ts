@@ -68,10 +68,6 @@ class RemoteManager {
     private async getRemoteInfo(remote: string) {
         const [type, name, ref] = remote.split('@');
         if (type === 'curse') {
-            if (!process.env.CURSEFORGE_API_KEY) {
-                console.error('CURSEFORGE_API_KEY not set');
-                return [undefined, undefined];
-            }
             const curseId = this.curseIds.get(remote);
             const cli = new CurseForge(curseId);
 

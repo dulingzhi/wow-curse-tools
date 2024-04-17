@@ -13,6 +13,8 @@ export class Update {
         const prj = new Project();
         await prj.init();
 
+        console.log(process.env.GITHUB_CONTEXT);
+
         if (prj.buildEnvs.size < 1) {
             console.error('No build envs found');
             return;

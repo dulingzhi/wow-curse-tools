@@ -26,7 +26,6 @@ class RemoteManager {
     private file = 'libs.json';
     private hashes = new Map<string, string>();
     private curseIds = new Map<string, number>();
-    private throttled = false;
     private fetched = new Set<string>();
     private remoteCache = new Map<string, RemoteInfo>();
 
@@ -35,7 +34,6 @@ class RemoteManager {
             const cfg = fs.readJsonSync(this.file);
             this.hashes = new Map(Object.entries(cfg.hashes));
             this.curseIds = new Map(Object.entries(cfg.curseIds));
-            this.throttled = Date.now() - cfg.timestamp < 60 * 60 * 1000;
         }
     }
 
@@ -173,9 +171,6 @@ class RemoteManager {
     }
 
     private async getZipFile(remote: string) {
-        if (this.throttled) {
-            return;
-        }
         if (!this.remoteFiles.has(remote) && !this.fetched.has(remote)) {
             const { url, hash } = await this.getRemoteInfo(remote);
 
@@ -216,10 +211,10 @@ class RemoteManager {
 
                     this.hashes.set(remote, hash);
                     this.remoteFiles.set(remote, { zip, entries });
+                    this.saveCache();
                 } catch {}
             } else {
             }
-            this.saveCache();
         }
         return this.remoteFiles.get(remote);
     }
@@ -228,7 +223,6 @@ class RemoteManager {
         const d = {
             hashes: Object.fromEntries(this.hashes.entries()),
             curseIds: Object.fromEntries(this.curseIds.entries()),
-            timestamp: Date.now(),
         };
 
         await fs.writeJson(this.file, d, { spaces: 2 });

@@ -11,7 +11,7 @@ import { gEnv } from '../env';
 
 export function isRemoveCondition(text: string) {
     {
-        const m = text.trim().match(/^([><=@]+)(\d+)$/);
+        const m = text.trim().match(/^([><=!~^]+)(\d+)$/);
         if (m) {
             return !gEnv.checkBuild(m[1], m[2]);
         }

@@ -11,7 +11,7 @@ import { gEnv } from '../env';
 
 export class ResFilesFinder {
     private _files = new Set<string>();
-    private exts = new Set(['.blp', '.tga', '.m2', ...gEnv.env.resFilters]);
+    private exts = new Set(['.blp', '.tga', '.m2', ...((gEnv.env && gEnv.env.resFilters) || [])]);
 
     private isResource(filePath: string) {
         const baseName = path.basename(filePath);

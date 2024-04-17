@@ -155,7 +155,7 @@ class EnvManager {
             case '!=':
             case '~=':
                 return version !== ver;
-            case '@':
+            case '^':
                 return Math.abs(version - ver) < 10000;
             default:
                 throw Error(`unknown op: ${op}`);

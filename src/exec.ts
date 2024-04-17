@@ -16,6 +16,7 @@ import { Emmy } from './commands/emmy';
 import { Config } from './commands/config';
 import { Locale } from './commands/locale';
 import { Update } from './commands/update';
+import { Global } from './commands/global';
 
 class App {
     optBuilds(args: string[]) {
@@ -99,6 +100,14 @@ class App {
             .description('Update your code')
             .action(async () => {
                 await new Update().run();
+            });
+
+        program
+            .command('global')
+            .option('-O, --output <output>', 'Output file')
+            .description('scan _G')
+            .action(async (opts) => {
+                await new Global().run(opts.output);
             });
 
         {

@@ -7,6 +7,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs-extra';
+import { glob } from 'fast-glob';
 import { BuildId, BuildInfo, Env, gEnv } from './env';
 import { findFiles } from './files';
 import { readChangeLog, readFile } from './util';
@@ -15,11 +16,6 @@ import { toWowVersion } from './util';
 interface Addon {
     name: string;
     folder: string;
-}
-
-interface Localization {
-    lang: string;
-    path: string;
 }
 
 interface BuildMap {
@@ -32,11 +28,15 @@ interface WowPackage {
     curse_id?: number;
     // eslint-disable-next-line camelcase
     old_version_style: boolean;
+    changelog?: string;
     builds?: BuildMap;
-    localizations?: any;
     // eslint-disable-next-line camelcase
     res_filters?: string[];
-    one?: boolean;
+    'res-filters'?: string[];
+    'no-compiles'?: string[];
+    'scan-locale-ignores'?: string[];
+
+    addons?: { [name: string]: string };
 }
 
 export class Project implements Addon {
@@ -46,12 +46,10 @@ export class Project implements Addon {
     private _folder: string;
     private _changelog?: string;
     private _addons: Addon[] = [];
-    private _localizations: Localization[] = [];
     private _buildEnvs = new Map<BuildId, Env>();
     private _resFilters: string[] = [];
-    private _localeFolder: string = '';
     private _localeIgnores: string[] = [];
-    private _oneBuild: boolean;
+    private _noCompiles = new Set<string>  ;
 
     constructor(readonly debug = false) {}
 
@@ -79,27 +77,15 @@ export class Project implements Addon {
         return this._addons;
     }
 
-    get localizations() {
-        return this._localizations;
-    }
-
     get buildEnvs() {
         return this._buildEnvs;
-    }
-
-    get localeFolder() {
-        return this._localeFolder;
     }
 
     get localeIgnores() {
         return this._localeIgnores;
     }
 
-    get oneBuild() {
-        return this._oneBuild;
-    }
-
-    genFileName(buildId: BuildId) {
+    genFileName(buildId?: BuildId) {
         if (buildId) {
             const suffix = gEnv.getBuildSuffix(buildId);
             if (suffix && suffix.length > 0) {
@@ -140,6 +126,10 @@ export class Project implements Addon {
         return (await Promise.all(this.addons.map((addon) => findFiles(addon.folder, addon.name)))).flat();
     }
 
+    isNoCompile(file: string) {
+        return this._noCompiles.has(file);
+    }
+
     async init() {
         const pkg = await fs.readJson('./package.json');
 
@@ -152,7 +142,6 @@ export class Project implements Addon {
         this._folder = path.resolve('./');
         this._name = p.name;
         this._curseId = p.curse_id || 0;
-        this._oneBuild = p.one || false;
 
         if (!p.old_version_style) {
             this._version = pkg.version;
@@ -160,7 +149,9 @@ export class Project implements Addon {
             this._version = this.parseOldVersionStyle(pkg.version);
         }
 
-        if (p.res_filters) {
+        if (p['res-filters']) {
+            this._resFilters = p['res-filters'];
+        } else if (p.res_filters) {
             this._resFilters = p.res_filters;
         }
 
@@ -205,8 +196,8 @@ export class Project implements Addon {
 
         this._addons.push(this);
 
-        if (pkg.wow.addons) {
-            for (const [name, folder] of Object.entries(pkg.wow.addons) as [string, string][]) {
+        if (p.addons) {
+            for (const [name, folder] of Object.entries(p.addons)) {
                 this._addons.push({
                     name: name,
                     folder: folder,
@@ -214,31 +205,18 @@ export class Project implements Addon {
             }
         }
 
-        if (pkg.wow.changelog) {
-            this._changelog = await readChangeLog(pkg.wow.changelog, this._version);
+        if (p.changelog) {
+            this._changelog = await readChangeLog(p.changelog, this._version);
         }
 
-        if (pkg.wow.localization) {
-            this._localeFolder = path.resolve(pkg.wow.localization.folder);
-            this._localeIgnores = (pkg.wow.localization.ignores || []).map((f: string) => path.resolve(f));
-
-            if (pkg.wow.localization.imports) {
-                this.applyLocalizations(pkg.wow.localization.imports, this._localeFolder);
-            }
-        } else if (pkg.wow.localizations) {
-            if (pkg.wow.localizations) {
-                this.applyLocalizations(pkg.wow.localizations);
-            }
+        if (p['scan-locale-ignores']) {
+            this._localeIgnores = p['scan-locale-ignores'];
+        } else if (pkg.wow.localization && pkg.wow.localization.ignores) {
+            this._localeIgnores = pkg.wow.localization.ignores
         }
-    }
 
-    applyLocalizations(o: any, folder?: string) {
-        for (const [key, v] of Object.entries(o)) {
-            const p = v as string;
-            this._localizations.push({
-                lang: key,
-                path: folder ? path.resolve(folder, p) : path.resolve(p),
-            });
+        if (p['no-compiles']) {
+            this._noCompiles = new Set( p['no-compiles'].map((p) => glob.sync(p)).flat().map(x=> path.resolve(x)));
         }
     }
 }

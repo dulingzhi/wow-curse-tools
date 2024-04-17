@@ -7,11 +7,28 @@
 
 import { readFile } from './util';
 
-export async function readLocale(filePath: string) {
+export interface LocaleArgs {
+    language: string;
+}
+export interface ImportInfo {
+    body: string;
+    args: LocaleArgs;
+}
+
+function parseArgs(args: string): LocaleArgs {
+    return {
+        language: args
+            .split(';')
+            .map((x) => x.split('=', 2) as [string, string])
+            .find(([k]) => k === 'language')![1],
+    };
+}
+
+export async function readLocale(filePath: string): Promise<ImportInfo | undefined> {
     const content = await readFile(filePath);
-    const m = content.match(/--\s*@import@((.|\r|\n)+)--\s*@end-import@/);
-    if (!m) {
+    const m = content.match(/--\s*@import:(?<args>.+)@(?<body>(.|\r|\n)+)--\s*@end-import@/);
+    if (!m || !m.groups) {
         return;
     }
-    return m[1];
+    return { body: m.groups.body, args: parseArgs(m.groups.args) };
 }

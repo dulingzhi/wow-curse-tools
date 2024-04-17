@@ -12,10 +12,7 @@ import { gEnv } from '../lib/env';
 import { Curse } from '../lib/curse';
 import { readLocale } from '../lib/locale';
 import { LuaFactory, LuaType } from 'wasmoon';
-
-function isInFolder(p: string, f: string) {
-    return !path.relative(f, p).startsWith('..');
-}
+import { glob } from 'fast-glob';
 
 export class Locale {
     private project = new Project();
@@ -45,14 +42,13 @@ export class Locale {
 
         for (const file of files) {
             if (file.path.endsWith('.lua')) {
-                let body = await fs.readFile(file.path, 'utf-8');
-
-                body = body.replace(/[\r\n]+/g, '\n');
-
+                const body = await fs.readFile(file.path, 'utf-8');
+                const eol = body.indexOf('\r\n') !== -1 ? '\r\n' : '\n';
                 const sb = [];
 
-                const lines = body.split(/[\r\n]+/);
+                const lines = body.split(/\r?\n/);
                 let currentOpts: Map<string, string> | undefined;
+                let anyChanges = false;
 
                 for (const line of lines) {
                     const m = line.trim().match(/^--\s*@locale:(?<opts>.+)@$/);
@@ -60,6 +56,7 @@ export class Locale {
                         const opts = new Map(m.groups?.opts.split(';').map((x) => x.split('=', 2) as [string, string]));
                         if (opts.get('language')) {
                             currentOpts = opts;
+                            anyChanges = true;
                         }
 
                         sb.push(line);
@@ -84,9 +81,9 @@ export class Locale {
                     }
                 }
 
-                const newBody = sb.join('\n');
+                const newBody = sb.join(eol);
 
-                if (newBody !== body) {
+                if (anyChanges && newBody !== body) {
                     await fs.writeFile(file.path, newBody);
                 }
             }
@@ -98,10 +95,12 @@ export class Locale {
 
         const cli = new Curse(this.project.curseId, this.token);
 
-        for (const f of this.project.localizations) {
-            const locale = await readLocale(f.path);
-            if (locale) {
-                await cli.importLocale(f.lang, locale);
+        for (const file of await this.project.allFiles()) {
+            if (file.path.endsWith('.lua')) {
+                const r = await readLocale(file.path);
+                if (r) {
+                    await cli.importLocale(r.args.language, r.body);
+                }
             }
         }
     }
@@ -109,24 +108,27 @@ export class Locale {
     async scan() {
         await this.init();
 
-        const isIgnore = (p: string) => {
-            for (const folder of this.project.localeIgnores) {
-                if (isInFolder(p, folder)) {
-                    return false;
-                }
-            }
-            return true;
-        };
+        const ignores = new Set(
+            this.project.localeIgnores
+                .map((x) => glob.sync(x))
+                .flat()
+                .map((x) => path.resolve(x))
+        );
 
-        const files = (await this.project.allFiles())
+        const allFiles = await this.project.allFiles();
+        const files = allFiles
             .filter((f) => f.path.endsWith('.lua'))
-            .filter((f) => isIgnore(f.path))
+            .filter((f) => !ignores.has(f.path))
             .map((f) => f.path);
+
+        const oldFiles = (await Promise.all(allFiles.map(async (f) => ({ f, info: await readLocale(f.path) }))))
+            .filter(({ info }) => info)
+            .map(({ f }) => f.path);
 
         const args = {
             action: 'scan',
             files,
-            oldFiles: this.project.localizations.map((l) => l.path),
+            oldFiles,
         };
 
         const factory = new LuaFactory(

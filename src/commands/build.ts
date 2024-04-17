@@ -140,7 +140,7 @@ export class Build {
 
     private async compileFile(file: File) {
         let content;
-        if (!file.noCompile) {
+        if (!this.project.isNoCompile(file.path)) {
             content = await gCompilerManager.compile(file.path);
         }
 

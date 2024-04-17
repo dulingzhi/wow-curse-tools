@@ -35,7 +35,7 @@ export class Flusher {
         for (const addon of this.project.addons) {
             for (const file of await findFiles(addon.folder, addon.name)) {
                 let content;
-                if (!file.noCompile) {
+                if (!this.project.isNoCompile(file.path)) {
                     content = await gCompilerManager.compile(file.path);
                 }
 

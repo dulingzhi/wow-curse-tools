@@ -9,7 +9,7 @@ import * as core from '@actions/core';
 import { Locale } from '../commands/locale';
 
 async function run() {
-    const token = core.getInput('token', { required: true });
+    const token = core.getInput('curse-wow-token', { required: true });
     const locale = new Locale(token);
 
     console.log('Scan locales');

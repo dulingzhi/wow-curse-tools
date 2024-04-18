@@ -8,7 +8,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as yauzl from 'yauzl';
-import { CurseForge } from './curse';
+import { CurseForge } from './curseforge';
 import { Octokit } from '@octokit/rest';
 
 interface Zip {
@@ -70,9 +70,11 @@ class RemoteManager {
         const [type, name, ref] = remote.split('@');
         if (type === 'curse') {
             const curseId = this.curseIds.get(remote);
-            const cli = new CurseForge(curseId);
+            const cli = new CurseForge();
 
-            if (!curseId) {
+            if (curseId) {
+                cli.setCurseId(curseId);
+            } else if (!curseId) {
                 const id = await cli.search(name);
                 this.curseIds.set(remote, id);
                 this.saveCache();
@@ -90,6 +92,7 @@ class RemoteManager {
             };
         } else if (type === 'github') {
             const o = new Octokit();
+
             const [owner, repo] = name.split('/');
             if (ref === '[releases]') {
                 try {

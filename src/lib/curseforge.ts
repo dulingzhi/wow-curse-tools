@@ -41,7 +41,7 @@ export class CurseForge {
         this.curseId = curseId;
     }
 
-    async files() {
+    async files(): Promise<CurseFile[]> {
         console.log(`fetch files: ${this.curseId}, ${this.token}`);
         const resp = await fetch(`${this.base}/${this.curseId}/files`, {
             headers: {

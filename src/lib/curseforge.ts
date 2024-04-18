@@ -35,6 +35,8 @@ export class CurseForge {
         if (!token) {
             throw Error('CURSE_FORGE_TOKEN not found');
         }
+
+        this.token = token;
     }
 
     setCurseId(curseId: number) {
@@ -49,13 +51,8 @@ export class CurseForge {
                 'user-agent': USER_AGENT,
             },
         });
-        try {
-            const json = await resp.json();
-            return json.data || [];
-        } catch {
-            console.log(await resp.text());
-        }
-        return [];
+        const json = await resp.json();
+        return json.data || [];
     }
 
     async search(name: string) {

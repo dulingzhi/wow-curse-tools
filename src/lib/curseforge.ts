@@ -42,18 +42,19 @@ export class CurseForge {
     }
 
     async files() {
-        const resp = (await (
-            await fetch(`${this.base}/${this.curseId}/files`, {
-                headers: {
-                    'X-Api-Key': this.token,
-                    'user-agent': USER_AGENT,
-                },
-            })
-        ).json()) as {
-            data: CurseFile[];
-        };
-
-        return resp.data || [];
+        const resp = await fetch(`${this.base}/${this.curseId}/files`, {
+            headers: {
+                'X-Api-Key': this.token,
+                'user-agent': USER_AGENT,
+            },
+        });
+        try {
+            const json = await resp.json();
+            return json.data || [];
+        } catch {
+            console.log(await resp.text());
+        }
+        return [];
     }
 
     async search(name: string) {

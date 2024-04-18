@@ -5,7 +5,7 @@
  * @Date   : 4/12/2024, 5:25:48 PM
  */
 
-import { gEnv } from '../lib/env';
+import { BuildId, gEnv } from '../lib/env';
 import { Project } from '../lib/project';
 
 export class Update {
@@ -22,7 +22,8 @@ export class Update {
             process.env.CURSE_FORGE_TOKEN = token;
         }
 
-        for (const [, env] of prj.buildEnvs) {
+        for (const [buildId, env] of prj.buildEnvs) {
+            console.log(`Update ${BuildId[buildId]}`);
             gEnv.setEnv(env);
             await prj.fetchRemoteFiles();
         }

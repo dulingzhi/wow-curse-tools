@@ -6,8 +6,11 @@
  */
 
 import { Update } from '../commands/update';
+import github = require('@actions/github');
 
 async function main() {
+    console.log(JSON.stringify(github.context, null, 2));
+
     await new Update().run();
 }
 

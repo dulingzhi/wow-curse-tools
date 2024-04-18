@@ -7,11 +7,43 @@
 
 import { Update } from '../commands/update';
 import github = require('@actions/github');
+import core = require('@actions/core');
+
+async function checkNeedRun() {
+    const token = core.getInput('token');
+
+    const commits = (github.context.payload.commits as any[])?.map((x) => x.id);
+    if (commits) {
+        const octokit = github.getOctokit(token);
+
+        for (const id of commits) {
+            const commits = await octokit.rest.repos.getCommit({
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                ref: id,
+            });
+
+            console.log(commits.data.files);
+
+            if (commits.data.files) {
+                for (const file of commits.data.files) {
+                    if (file.filename.endsWith('.xml')) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
 
 async function main() {
-    console.log(JSON.stringify(github.context, null, 2));
-
-    await new Update().run();
+    if (await checkNeedRun()) {
+        await new Update().run();
+        core.info('Run success');
+    } else {
+        core.info('No need to run');
+    }
 }
 
 main();

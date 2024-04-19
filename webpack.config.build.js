@@ -9,10 +9,10 @@ const config = {
     target: "node",
 
     entry: {
-        index: "./src/actions/publish.ts",
+        index: "./src/actions/build.ts",
     },
     output: {
-        path: path.resolve(__dirname, "actions/publish"),
+        path: path.resolve(__dirname, "actions/build"),
         filename: "[name].js",
         libraryTarget: "commonjs2",
         devtoolModuleFilenameTemplate: "../[resource-path]",

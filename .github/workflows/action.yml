@@ -34,6 +34,13 @@ jobs:
           path: actions/update
           token: ${{ secrets.PAT }}
 
+      - name: Checkout curse-build-action
+        uses: actions/checkout@v4
+        with:
+          repository: curse-action/build
+          path: actions/build
+          token: ${{ secrets.PAT }}
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -60,5 +67,11 @@ jobs:
         uses: EndBug/add-and-commit@v9
         with:
           cwd: actions/update
+          message: "auto build"
+
+      - name: Commit curse-build-action
+        uses: EndBug/add-and-commit@v9
+        with:
+          cwd: actions/build
           message: "auto build"
 

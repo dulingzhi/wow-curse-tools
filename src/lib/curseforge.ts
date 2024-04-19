@@ -73,6 +73,7 @@ export class CurseForge {
             ).json();
             const mod = (resp.data || []).find((x: any) => x.name === name);
             if (mod) {
+                console.log(`Found ${name}, id: ${mod.id}`);
                 this.curseId = mod.id;
                 return mod.id;
             }

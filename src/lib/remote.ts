@@ -69,7 +69,7 @@ class RemoteManager {
     private async getRemoteInfoImpl(remote: string): Promise<RemoteInfo> {
         const [type, name, ref] = remote.split('@');
         if (type === 'curse') {
-            const curseId = this.curseIds.get(remote);
+            const curseId = Number.parseInt(ref) || this.curseIds.get(remote);
             const cli = new CurseForge();
 
             if (curseId) {

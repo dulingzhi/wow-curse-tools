@@ -97,10 +97,9 @@ class App {
 
         program
             .command('update')
-            .option('-T, --token <token>', 'Your curseforge API token')
             .description('Update your code')
-            .action(async (opts) => {
-                await new Update().run(opts.token);
+            .action(async () => {
+                await new Update().run();
             });
 
         program

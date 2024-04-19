@@ -55,24 +55,39 @@ export class CurseForge {
     }
 
     async search(name: string) {
-        const url = new URL(`${this.base}/search`);
-        url.searchParams.append('gameId', '1');
-        url.searchParams.append('searchFilter', name);
+        {
+            const url = new URL(`${this.base}/search`);
+            url.searchParams.append('gameId', '1');
+            url.searchParams.append('searchFilter', name);
 
-        const resp = await (
-            await fetch(url, {
-                headers: {
-                    'X-Api-Key': this.token,
-                    'user-agent': USER_AGENT,
-                },
-            })
-        ).json();
-        const mod = (resp.data || []).find((x: any) => x.name === name);
-        if (mod) {
-            console.log(`Found ${name}, id: ${mod.id}`);
-            this.curseId = mod.id;
-            return mod.id;
+            const resp = await (
+                await fetch(url, {
+                    headers: {
+                        'X-Api-Key': this.token,
+                        'user-agent': USER_AGENT,
+                    },
+                })
+            ).json();
+            const mod = (resp.data || []).find((x: any) => x.name === name);
+            if (mod) {
+                console.log(`Found ${name}, id: ${mod.id}`);
+                this.curseId = mod.id;
+                return mod.id;
+            }
         }
+
+        // {
+        //     const p = name.toLowerCase().replace(/\./g, '-');
+        //     const url = `https://www.curseforge.com/wow/addons/${p}`;
+
+        //     const resp = await (await fetch(url, { headers: { 'user-agent': USER_AGENT } })).text();
+
+        //     const m = resp.match(/id="__NEXT_DATA__"[^>]+\>(?<code>.+)\<\/script>/ms);
+        //     if (m && m.groups) {
+
+        //     }
+        // }
+
         throw Error('not found');
     }
 }

@@ -55,22 +55,31 @@ export class CurseForge {
     }
 
     async search(name: string) {
-        const url = new URL(`${this.base}/search`);
-        url.searchParams.append('gameId', '1');
-        url.searchParams.append('searchFilter', name);
+        let page = 1;
+        while (true) {
+            const url = new URL(`${this.base}/search`);
+            url.searchParams.append('gameId', '1');
+            url.searchParams.append('searchFilter', name);
+            url.searchParams.append('index', page.toString());
+            url.searchParams.append('pageSize', '50');
 
-        const resp = await (
-            await fetch(url, {
-                headers: {
-                    'X-Api-Key': this.token,
-                    'user-agent': USER_AGENT,
-                },
-            })
-        ).json();
-
-        const mod = (resp.data || []).filter((x: any) => x.name === name)[0];
-        this.curseId = mod.id;
-
-        return mod.id;
+            const resp = await (
+                await fetch(url, {
+                    headers: {
+                        'X-Api-Key': this.token,
+                        'user-agent': USER_AGENT,
+                    },
+                })
+            ).json();
+            const mod = (resp.data || []).find((x: any) => x.name === name);
+            if (mod) {
+                this.curseId = mod.id;
+                return mod.id;
+            }
+            if (page >= resp.pagination.totalCount) {
+                break;
+            }
+            ++page;
+        }
     }
 }

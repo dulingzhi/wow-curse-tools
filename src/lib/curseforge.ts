@@ -84,6 +84,7 @@ export class CurseForge {
                     console.log(`Not found ${name}`);
                     break;
                 }
+                page++;
             }
         }
 

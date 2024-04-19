@@ -5,6 +5,8 @@
  * @Date   : 4/18/2024, 1:34:44 PM
  */
 
+import { readConfigSync } from './util';
+
 export interface CurseFile {
     id: number;
     fileName: string;
@@ -30,7 +32,7 @@ export class CurseForge {
 
     constructor(token?: string) {
         if (!token) {
-            token = process.env.CURSE_FORGE_TOKEN;
+            token = readConfigSync('curse-forge-token');
         }
         if (!token) {
             throw Error('CURSE_FORGE_TOKEN not found');

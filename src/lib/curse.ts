@@ -7,6 +7,7 @@
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import { readConfigSync } from './util';
 
 export interface GameVersion {
     id: number;
@@ -20,8 +21,17 @@ const USER_AGENT =
 
 export class Curse {
     private base = 'https://wow.curseforge.com/api';
+    private token: string;
 
-    constructor(private curseId: number, private token: string) {}
+    constructor(private curseId: number, token?: string) {
+        if (!token) {
+            token = readConfigSync('curse-wow-token');
+        }
+        if (!token) {
+            throw Error('Not found CURSE_WOW_TOKEN');
+        }
+        this.token = token;
+    }
 
     async gameVersions() {
         const url = `${this.base}/game/versions`;

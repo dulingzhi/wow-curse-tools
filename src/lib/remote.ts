@@ -10,6 +10,7 @@ import * as path from 'path';
 import * as yauzl from 'yauzl';
 import { CurseForge } from './curseforge';
 import { Octokit } from '@octokit/rest';
+import { readConfigSync } from './util';
 
 interface Zip {
     zip: yauzl.ZipFile;
@@ -91,7 +92,7 @@ class RemoteManager {
                 hash: file.hashes.find((x) => x.algo === 2)?.value || file.fileFingerprint.toString(16),
             };
         } else if (type === 'github') {
-            const o = new Octokit({ auth: process.env.GITHUB_TOKEN });
+            const o = new Octokit({ auth: readConfigSync('github-token') });
 
             const [owner, repo] = name.split('/');
             if (ref === '[releases]') {

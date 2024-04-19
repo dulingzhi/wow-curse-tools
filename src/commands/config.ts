@@ -15,9 +15,13 @@ import { proto_database } from '../lib/proto/product.proto';
 enum WhichConfig {
     None,
     BuildPath,
+    CurseWowToken,
+    CurseForgeToken,
+    GithubToken,
 }
 
 export class Config {
+    private cfgPath = `${os.homedir()}/.wct.json`;
     async run() {
         const opts = await inquirer.prompt([
             {
@@ -25,7 +29,10 @@ export class Config {
                 name: 'which',
                 message: 'Which config to set?',
                 choices: [
-                    { type: 'choice', value: WhichConfig.BuildPath, name: 'Set watch path for build id' },
+                    { type: 'choice', value: WhichConfig.BuildPath, name: 'Set wow path' },
+                    { type: 'choice', value: WhichConfig.CurseWowToken, name: 'Set curse wow token' },
+                    { type: 'choice', value: WhichConfig.CurseForgeToken, name: 'Set curseforge token' },
+                    { type: 'choice', value: WhichConfig.GithubToken, name: 'Set github token' },
                     { type: 'separator' },
                     { type: 'choice', value: WhichConfig.None, name: 'Quit' },
                 ],
@@ -36,9 +43,34 @@ export class Config {
             case WhichConfig.BuildPath:
                 await this.buildPath();
                 break;
+            case WhichConfig.CurseForgeToken:
+            case WhichConfig.CurseWowToken:
+            case WhichConfig.GithubToken:
+                await this.setToken(opts.which);
+                break;
+            case WhichConfig.None:
+                return;
             default:
                 break;
         }
+
+        const quitOpt = await inquirer.prompt({
+            type: 'list',
+            name: 'quit',
+            message: 'Back to main?',
+            choices: [
+                { type: 'choice', value: 'Quit', name: 'Quit' },
+                { type: 'choice', value: 'Back', name: 'Back to main' },
+            ],
+        });
+
+        if (quitOpt.quit === 'Quit') {
+            return;
+        }
+
+        setTimeout(() => {
+            this.run();
+        }, 0);
     }
 
     async getDefaultPath(buildId: BuildId) {
@@ -80,7 +112,8 @@ export class Config {
         const opts = await inquirer.prompt([
             {
                 type: 'list',
-                name: 'first',
+                name: 'buildId',
+                message: 'Which build to set?',
                 choices: [
                     ...allDefaults.map((x) => ({ name: `${BuildId[x.buildId]}: (${x.path})`, value: x })),
                     'All set them',
@@ -88,7 +121,7 @@ export class Config {
             },
         ]);
 
-        const setAll = opts.first == 'All set them';
+        const setAll = opts.buildId == 'All set them';
 
         if (!setAll) {
             opts.path = (
@@ -96,21 +129,14 @@ export class Config {
                     {
                         type: 'input',
                         name: 'path',
-                        default: opts.first.path,
+                        default: opts.buildId.path,
                     },
                 ])
             ).path as string;
         }
 
-        const cfgPath = `${os.homedir()}/.wct.json`;
-        let cfg;
-        try {
-            cfg = await fs.readJson(cfgPath, { throws: false });
-        } catch {}
-
-        if (!cfg) {
-            cfg = {};
-        }
+        const cfgPath = this.cfgPath;
+        const cfg = await this.readConfig();
 
         cfg.buildPath = cfg.buildPath || {};
 
@@ -123,6 +149,36 @@ export class Config {
             cfg.buildPath[BuildId[opts.first.buildId]] = opts.path;
         }
 
-        await fs.writeJson(cfgPath, cfg);
+        await fs.writeJson(cfgPath, cfg, { spaces: 2 });
+    }
+
+    async setToken(which: WhichConfig) {
+        const opts = await inquirer.prompt({
+            type: 'input',
+            name: 'token',
+        });
+
+        const cfg = await this.readConfig();
+
+        switch (which) {
+            case WhichConfig.CurseForgeToken:
+                cfg['curse-forge-token'] = opts.token;
+                break;
+            case WhichConfig.CurseWowToken:
+                cfg['curse-wow-token'] = opts.token;
+                break;
+            case WhichConfig.GithubToken:
+                cfg['github-token'] = opts.token;
+                break;
+        }
+
+        await fs.writeJson(this.cfgPath, cfg, { spaces: 2 });
+    }
+
+    async readConfig() {
+        try {
+            return await fs.readJson(this.cfgPath);
+        } catch {}
+        return {};
     }
 }

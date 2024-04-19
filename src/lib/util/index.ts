@@ -5,8 +5,9 @@
  * @Date   : 5/17/2021, 2:57:51 PM
  */
 
-import * as path from 'path';
-import * as fs from 'fs-extra';
+import os = require('os');
+import path = require('path');
+import fs = require('fs-extra');
 import { gEnv } from '../env';
 
 export function isRemoveCondition(text: string) {
@@ -97,4 +98,21 @@ export function toInterfaceVersion(t: string) {
         return `${m[1]}${m[2].padStart(2, '0')}${m[3].padStart(2, '0')}`;
     }
     return '';
+}
+
+export function readConfigSync(...paths: string[]) {
+    const cfg = fs.readJsonSync(`${os.homedir()}/.wct.json`);
+    let current = cfg;
+    for (const [i, p] of paths.entries()) {
+        if (current[p] && i + 1 < paths.length) {
+            current = current[p];
+        } else {
+            return current[p];
+        }
+    }
+
+    if (paths.length === 1) {
+        const key = paths[0].toUpperCase().replace(/-/g, '_');
+        return process.env[key];
+    }
 }

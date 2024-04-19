@@ -16,6 +16,7 @@ import { Project } from '../lib/project';
 import { readFile } from '../lib/util';
 import { Identifier } from 'luaparse';
 import { gEnv } from '../lib/env';
+import { glob } from 'fast-glob';
 
 const GLOBAL_INGORES = new Set(['Font', 'FontString', 'FontFamily', 'Texture', 'Script', 'Include']);
 
@@ -210,17 +211,16 @@ export class Emmy {
         let files: File[] = [];
 
         if (this.isBlizzard) {
-            if (!(await fs.pathExists('Interface/FrameXML/FrameXML.toc'))) {
+            const frameXmls = await glob.glob('Interface/FrameXML/FrameXML*.toc');
+            if (frameXmls.length === 0) {
                 throw Error('error folder');
             }
+
+            const addons = await glob.glob('Interface*/AddOns/*/*.toc');
+
             files = (
                 await Promise.all(
-                    [
-                        'Interface/FrameXML/FrameXML.toc',
-                        ...(
-                            await fs.readdir('Interface/AddOns')
-                        ).map((x) => path.join('Interface/AddOns', x, x + '.toc')),
-                    ].map(async (x) => {
+                    [...frameXmls, ...addons].map(async (x) => {
                         if (await fs.pathExists(x)) {
                             const folder = path.dirname(x);
                             const name = path.basename(x, '.toc');

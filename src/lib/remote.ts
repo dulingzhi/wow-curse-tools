@@ -32,8 +32,8 @@ class RemoteManager {
     constructor() {
         if (fs.pathExistsSync(this.file)) {
             const cfg = fs.readJsonSync(this.file);
-            this.hashes = new Map(Object.entries(cfg.hashes));
-            this.curseIds = new Map(Object.entries(cfg.curseIds));
+            this.hashes = new Map(Object.entries(cfg.hashes || []));
+            this.curseIds = new Map(Object.entries(cfg.curseIds || []));
         }
     }
 

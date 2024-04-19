@@ -56,23 +56,34 @@ export class CurseForge {
 
     async search(name: string) {
         {
-            const url = new URL(`${this.base}/search`);
-            url.searchParams.append('gameId', '1');
-            url.searchParams.append('searchFilter', name);
+            let page = 0;
+            while (true) {
+                const index = page * 50;
+                const url = new URL(`${this.base}/search`);
+                url.searchParams.append('gameId', '1');
+                url.searchParams.append('searchFilter', name);
+                url.searchParams.append('pageSize', '50');
+                url.searchParams.append('index', index.toString());
 
-            const resp = await (
-                await fetch(url, {
-                    headers: {
-                        'X-Api-Key': this.token,
-                        'user-agent': USER_AGENT,
-                    },
-                })
-            ).json();
-            const mod = (resp.data || []).find((x: any) => x.name === name);
-            if (mod) {
-                console.log(`Found ${name}, id: ${mod.id}`);
-                this.curseId = mod.id;
-                return mod.id;
+                const resp = await (
+                    await fetch(url, {
+                        headers: {
+                            'X-Api-Key': this.token,
+                            'user-agent': USER_AGENT,
+                        },
+                    })
+                ).json();
+                const mod = (resp.data || []).find((x: any) => x.name === name);
+                if (mod) {
+                    console.log(`Found ${name}, id: ${mod.id}`);
+                    this.curseId = mod.id;
+                    return mod.id;
+                }
+
+                if (index + resp.pagination.resultCount >= resp.pagination.totalCount) {
+                    console.log(`Not found ${name}`);
+                    break;
+                }
             }
         }
 

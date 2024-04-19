@@ -16,6 +16,8 @@ async function run() {
     for (const [buildId, env] of prj.buildEnvs) {
         gEnv.setEnv(env);
 
+        console.log(`Building ${BuildId[buildId]}`);
+
         await new Build().run(path.join('.build', BuildId[buildId]), buildId);
     }
 }

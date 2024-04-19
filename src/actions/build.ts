@@ -12,6 +12,7 @@ import { Project } from '../lib/project';
 
 async function run() {
     const prj = new Project();
+    await prj.init();
 
     for (const [buildId, env] of prj.buildEnvs) {
         gEnv.setEnv(env);

@@ -9,17 +9,13 @@ import { BuildId, gEnv } from '../lib/env';
 import { Project } from '../lib/project';
 
 export class Update {
-    async run(token: string) {
+    async run() {
         const prj = new Project();
         await prj.init();
 
         if (prj.buildEnvs.size < 1) {
             console.error('No build envs found');
             return;
-        }
-
-        if (token) {
-            process.env.CURSE_FORGE_TOKEN = token;
         }
 
         for (const [buildId, env] of prj.buildEnvs) {

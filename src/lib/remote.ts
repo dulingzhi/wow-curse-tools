@@ -91,7 +91,7 @@ class RemoteManager {
                 hash: file.hashes.find((x) => x.algo === 2)?.value || file.fileFingerprint.toString(16),
             };
         } else if (type === 'github') {
-            const o = new Octokit();
+            const o = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
             const [owner, repo] = name.split('/');
             if (ref === '[releases]') {

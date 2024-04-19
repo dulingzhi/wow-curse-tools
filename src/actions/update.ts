@@ -10,7 +10,15 @@ import core = require('@actions/core');
 
 async function main() {
     const token = core.getInput('curse-forge-token', { required: true });
-    await new Update().run(token);
+    const githubToken = core.getInput('github-token');
+
+    if (token) {
+        process.env.CURSE_FORGE_TOKEN = token;
+    }
+    if (githubToken) {
+        process.env.GITHUB_TOKEN = githubToken;
+    }
+    await new Update().run();
 }
 
 main();

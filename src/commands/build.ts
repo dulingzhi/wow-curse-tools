@@ -115,7 +115,7 @@ export class Build {
             }, 1000);
         }
 
-        this.refresh();
+        await this.refresh();
     }
 
     private async refresh() {

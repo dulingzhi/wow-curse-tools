@@ -32,6 +32,7 @@ interface BuildIdData {
     suffix: string;
     atlas: string[];
     product: string;
+    version_prefix?: string;
 }
 
 const BUILD_DATA = {
@@ -46,12 +47,14 @@ const BUILD_DATA = {
         suffix: 'Wrath',
         atlas: ['lkc', 'wrath', 'WOTLKC', 'Wrath', 'wlk'],
         product: 'wow_classic',
+        version_prefix: '3.',
     },
     Cata: {
         path: '_classic_',
         suffix: 'Cata',
         atlas: ['cata', 'ctm'],
-        product: 'wow_classic_beta',
+        product: 'wow_classic',
+        version_prefix: '4.',
     },
     Mainline: {
         path: '_retail_',

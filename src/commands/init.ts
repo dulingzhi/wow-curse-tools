@@ -7,7 +7,6 @@
 
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { decode as htmldecode } from 'html-entities';
 
 import inquirer from 'inquirer';
 
@@ -23,19 +22,26 @@ export class Init {
             return;
         }
 
-        const versionsMap: Map<string, string> = await (async () => {
-            try {
-                const resp = await fetch('https://wago.tools');
-                const data = await resp.text();
-                const m = data.match(/data-page="([^"]+)"/);
+        const versionsMap = new Map<BuildId, string>();
 
-                if (m) {
-                    const d = JSON.parse(htmldecode(m[1]));
-                    return new Map(d.props.versions.map((x: any) => [x.product, x.version]));
+        try {
+            const resp = await fetch('https://wago.tools/api/builds');
+            const data = await resp.json();
+
+            for (const [buildId, buildData] of gEnv.buildData.entries()) {
+                const builds: any[] = data[buildData.product];
+                let build: any;
+                if (buildData.version_prefix) {
+                    build = builds.find((x) => x.version.startsWith(buildData.version_prefix));
+                } else {
+                    build = builds[0];
                 }
-            } catch {}
-            return new Map();
-        })();
+                if (!build) {
+                    continue;
+                }
+                versionsMap.set(buildId, build.version);
+            }
+        } catch {}
 
         const pkg = await fs.readJson('package.json');
         pkg.wow = pkg.wow || {};
@@ -53,11 +59,11 @@ export class Init {
                 name: 'builds',
                 message: 'Which wow version to use?',
                 choices: [...gEnv.buildData.entries()].map(([buildId, d]) => ({
-                    name: `${BuildId[buildId]} (${versionsMap.get(d.product) || d.product})`,
+                    name: `${BuildId[buildId]} (${versionsMap.get(buildId) || d.product})`,
                     value: {
                         buildKey: BuildId[buildId],
                         product: d.product,
-                        version: toInterfaceVersion(versionsMap.get(d.product) || ''),
+                        version: toInterfaceVersion(versionsMap.get(buildId) || ''),
                     },
                 })),
             },

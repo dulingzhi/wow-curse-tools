@@ -85,8 +85,6 @@ export class CodeFilesFinder {
     }
 
     private async parseFile(filePath: string, remote?: string) {
-        this._paths.add(path.resolve(filePath));
-
         if (!(await fs.pathExists(filePath))) {
             if (gEnv.env && !gEnv.env.debug) {
                 throw Error(`not found file ${filePath}`);
@@ -95,6 +93,8 @@ export class CodeFilesFinder {
                 return;
             }
         }
+
+        this._paths.add(path.resolve(filePath));
 
         const ext = path.extname(filePath).toLowerCase();
 

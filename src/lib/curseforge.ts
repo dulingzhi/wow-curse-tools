@@ -32,6 +32,9 @@ export class CurseForge {
 
     constructor(token?: string) {
         if (!token) {
+            token = process.env.CURSE_FORGE_TOKEN;
+        }
+        if (!token) {
             token = readConfigSync('curse-forge-token');
         }
         if (!token) {

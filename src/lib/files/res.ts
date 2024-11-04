@@ -10,18 +10,20 @@ import { glob } from 'fast-glob';
 import { gEnv } from '../env';
 
 export class ResFilesFinder {
-    async findFiles(folder: string) {
+    async findFiles(folder: string, excludePath: string[]) {
         const files = await glob.async(
             [
                 '**.blp',
                 '**.tga',
                 '**.m2',
+                '**.ogg',
+                '**.mp3',
                 'bindings.xml',
                 '**license*',
                 '**/license*',
                 ...((gEnv.env && gEnv.env.resFilters) || []),
             ],
-            { cwd: folder, caseSensitiveMatch: false }
+            { cwd: folder, caseSensitiveMatch: false, ignore: excludePath, absolute: true },
         );
         return files.map((p) => path.resolve(p));
     }

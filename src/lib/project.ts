@@ -122,8 +122,17 @@ export class Project implements Addon {
         return await findFiles(this._folder, this._name);
     }
 
+    getSubAddons() {
+        return this.addons.filter(addon => !(addon instanceof Project));
+    }
+
     async allFiles() {
-        return (await Promise.all(this.addons.map((addon) => findFiles(addon.folder, addon.name)))).flat();
+        return (await Promise.all(this.addons.map((addon) => {
+            if (addon instanceof Project) {
+                return findFiles(addon.folder, addon.name, false, this.getSubAddons().map((addon) => addon.folder));
+            }
+            return findFiles(addon.folder, addon.name);
+        }))).flat();
     }
 
     isNoCompile(file: string) {

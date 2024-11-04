@@ -20,10 +20,10 @@ export interface File {
     relative: string;
 }
 
-export async function findFiles(folder: string, name: string, fetchRemote = false): Promise<File[]> {
+export async function findFiles(folder: string, name: string, fetchRemote = false, excludePath: string[] = []): Promise<File[]> {
     const filePaths = [
         ...(await new CodeFilesFinder(fetchRemote).findFiles(path.resolve(folder, name + '.toc'))),
-        ...(await new ResFilesFinder().findFiles(folder)),
+        ...(await new ResFilesFinder().findFiles(folder, excludePath)),
     ];
 
     return filePaths.map((filePath) => ({

@@ -27,6 +27,13 @@ jobs:
           path: actions/publish
           token: ${{ secrets.PAT }}
 
+      - name: Checkout curse-package-action
+        uses: actions/checkout@v4
+        with:
+          repository: curse-action/package
+          path: actions/package
+          token: ${{ secrets.PAT }}
+
       - name: Checkout curse-update-action
         uses: actions/checkout@v4
         with:
@@ -61,6 +68,12 @@ jobs:
         uses: EndBug/add-and-commit@v9
         with:
           cwd: actions/publish
+          message: "auto build"
+
+      - name: Commit curse-package-action
+        uses: EndBug/add-and-commit@v9
+        with:
+          cwd: actions/package
           message: "auto build"
 
       - name: Commit curse-update-action

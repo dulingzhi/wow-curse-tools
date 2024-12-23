@@ -15,7 +15,8 @@
     "action-locale": "webpack --mode production --config webpack.config.locale.js",
     "action-update": "webpack --mode production --config webpack.config.update.js",
     "action-build": "webpack --mode production --config webpack.config.build.js",
-    "action": "npm run action-publish && npm run action-locale && npm run action-update && npm run action-build"
+    "action-package": "webpack --mode production --config webpack.config.package.js",
+    "action": "npm run action-publish && npm run action-locale && npm run action-update && npm run action-build && npm run action-package"
   },
   "author": "Dencer",
   "license": "MIT",

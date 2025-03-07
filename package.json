@@ -16,7 +16,9 @@
     "action-update": "webpack --mode production --config webpack.config.update.js",
     "action-build": "webpack --mode production --config webpack.config.build.js",
     "action-package": "webpack --mode production --config webpack.config.package.js",
-    "action": "npm run action-publish && npm run action-locale && npm run action-update && npm run action-build && npm run action-package"
+    "action-changelog": "webpack --mode production --config webpack.config.changelog.js",
+    "action-nga": "webpack --mode production --config webpack.config.nga.js",
+    "action": "npm run action-publish && npm run action-locale && npm run action-update && npm run action-build && npm run action-package && npm run action-changelog && npm run action-nga"
   },
   "author": "Dencer",
   "license": "MIT",
@@ -26,7 +28,7 @@
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^9.0.7",
     "@types/luaparse": "^0.2.7",
-    "@types/node": "^14.14.39",
+    "@types/node": "^14.18.63",
     "@types/yauzl": "^2.10.3",
     "@types/yazl": "^2.4.2",
     "@typescript-eslint/eslint-plugin": "^7.6.0",
@@ -41,6 +43,8 @@
     "eslint-plugin-promise": "^6.1.1",
     "fast-glob": "^3.3.2",
     "fs-extra": "^11.2.0",
+    "html-entities-decode": "^1.0.2",
+    "iconv-lite": "^0.6.3",
     "inquirer": "^9.2.17",
     "luaparse": "^0.3.1",
     "prettier": "^2.2.1",

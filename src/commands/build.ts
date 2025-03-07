@@ -17,6 +17,7 @@ import { BuildId, gEnv } from '../lib/env';
 import { copyFile, isListFile, writeFile } from '../lib/util';
 import { Mutex } from 'async-mutex';
 import { proto_database } from '../lib/proto/product.proto';
+import { glob } from 'fast-glob';
 
 export class Build {
     private output: string;
@@ -24,7 +25,7 @@ export class Build {
     private project = new Project(true);
     private mutex = new Mutex();
 
-    constructor(private watch = false) {}
+    constructor(private watch = false) { }
 
     async resolveOutput(buildId: BuildId) {
         const buildData = gEnv.getBuildData(buildId);
@@ -51,7 +52,7 @@ export class Build {
                             }
                         }
                     }
-                } catch {}
+                } catch { }
             }
         }
 
@@ -73,7 +74,7 @@ export class Build {
                     if (install && install.settings?.installPath) {
                         return path.resolve(install.settings.installPath, buildFolder, addonPath);
                     }
-                } catch {}
+                } catch { }
             }
         }
 
@@ -128,6 +129,15 @@ export class Build {
                 [...this.files.values()].filter((file) => !filesMap.has(file.path)).map((file) => this.removeFile(file))
             );
 
+            const newFiles = new Set(files.map((file) => this.resolveFilePath(file)));
+
+            const removeFiles = this.project.addons.map((addon) => path.resolve(this.output, addon.name))
+                .map((d) => glob.sync('**', { cwd: d }).map(f => path.resolve(d, f)))
+                .flat()
+                .filter((f) => !newFiles.has(f));
+
+            await Promise.all(removeFiles.map((file) => this.removeFile(file)));
+
             this.files = filesMap;
         } catch (error) {
             console.error(error);
@@ -155,13 +165,13 @@ export class Build {
         }
     }
 
-    private async removeFile(file: File) {
-        try {
-            const targetPath = this.resolveFilePath(file);
-            await fs.unlink(targetPath);
+    private async removeFile(file: File | string) {
+        const resolve = typeof file === 'string' ? file : this.resolveFilePath(file);
 
-            console.log(`remove file: ${targetPath}`);
-        } catch {}
+        try {
+            await fs.unlink(resolve);
+            console.log(`remove file: ${resolve}`);
+        } catch { }
     }
 
     private async onFileChanged(filePath: string) {

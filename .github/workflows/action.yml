@@ -48,6 +48,20 @@ jobs:
           path: actions/build
           token: ${{ secrets.PAT }}
 
+      - name: Checkout curse-changelog-action
+        uses: actions/checkout@v4
+        with:
+          repository: curse-action/changelog
+          path: actions/changelog
+          token: ${{ secrets.PAT }}
+
+      - name: Checkout curse-nga-action
+        uses: actions/checkout@v4
+        with:
+          repository: curse-action/nga
+          path: actions/nga
+          token: ${{ secrets.PAT }}
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -87,4 +101,17 @@ jobs:
         with:
           cwd: actions/build
           message: "auto build"
+
+      - name: Commit curse-changelog-action
+        uses: EndBug/add-and-commit@v9
+        with:
+          cwd: actions/changelog
+          message: "auto build"
+
+      - name: Commit curse-nga-action
+        uses: EndBug/add-and-commit@v9
+        with:
+          cwd: actions/nga
+          message: "auto build"
+
 

@@ -37,6 +37,7 @@ interface WowPackage {
     'scan-locale-ignores'?: string[];
 
     addons?: { [name: string]: string };
+    nga_id?: { [name: string]: number };
 }
 
 export class Project implements Addon {
@@ -49,9 +50,10 @@ export class Project implements Addon {
     private _buildEnvs = new Map<BuildId, Env>();
     private _resFilters: string[] = [];
     private _localeIgnores: string[] = [];
-    private _noCompiles = new Set<string>  ;
+    private _noCompiles = new Set<string>;
+    private _ngaId = new Map<BuildId, number>();
 
-    constructor(readonly debug = false) {}
+    constructor(readonly debug = false) { }
 
     get name() {
         return this._name;
@@ -83,6 +85,10 @@ export class Project implements Addon {
 
     get localeIgnores() {
         return this._localeIgnores;
+    }
+
+    getNgaId(buildId: BuildId) {
+        return this._ngaId.get(buildId);
     }
 
     genFileName(buildId?: BuildId) {
@@ -135,6 +141,10 @@ export class Project implements Addon {
         }))).flat();
     }
 
+    allFolders() {
+        return this.addons.map((addon) => addon.folder);
+    }
+
     isNoCompile(file: string) {
         return this._noCompiles.has(file);
     }
@@ -162,6 +172,15 @@ export class Project implements Addon {
             this._resFilters = p['res-filters'];
         } else if (p.res_filters) {
             this._resFilters = p.res_filters;
+        }
+
+        if (p.nga_id) {
+            for (const [buildKey, tid] of Object.entries(p.nga_id)) {
+                const buildId = gEnv.toBuildId(buildKey);
+                if (buildId) {
+                    this._ngaId.set(buildId, tid);
+                }
+            }
         }
 
         if (p.builds) {
@@ -208,8 +227,8 @@ export class Project implements Addon {
         if (p.addons) {
             for (const [name, folder] of Object.entries(p.addons)) {
                 this._addons.push({
-                    name: name,
-                    folder: folder,
+                    name,
+                    folder: path.join(this._folder, folder),
                 });
             }
         }
@@ -225,7 +244,7 @@ export class Project implements Addon {
         }
 
         if (p['no-compiles']) {
-            this._noCompiles = new Set( p['no-compiles'].map((p) => glob.sync(p)).flat().map(x=> path.resolve(x)));
+            this._noCompiles = new Set(p['no-compiles'].map((p) => glob.sync(p)).flat().map(x => path.resolve(x)));
         }
     }
 }

@@ -17,6 +17,7 @@ import { Config } from './commands/config';
 import { Locale } from './commands/locale';
 import { Update } from './commands/update';
 import { Global } from './commands/global';
+import { NgaPublish } from './commands/nga';
 
 class App {
     optBuilds(args: string[]) {
@@ -43,11 +44,19 @@ class App {
         program
             .command('publish')
             .option('-T, --token <token>', 'Your curse API token')
-            .option('-G, --release', 'Release from git tag')
             .arguments('[builds...]')
             .description('Publish your addon.')
             .action(async (args: string[], opts) => {
-                await new Publish().run({ token: opts.token, builds: this.optBuilds(args), curse: true });
+                await new Publish().run({ token: opts.token, builds: this.optBuilds(args) });
+            });
+
+        program
+            .command('nga')
+            .option('-C, --cookie <cookie>', 'Your NGA cookie')
+            .arguments('[builds...]')
+            .description('Publish your addon to NGA.')
+            .action(async (args: string[], opts) => {
+                await new NgaPublish().run({ cookie: opts.cookie, builds: this.optBuilds(args) });
             });
 
         program

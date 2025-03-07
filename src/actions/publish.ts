@@ -10,11 +10,9 @@ import { Publish } from '../commands/publish';
 
 async function run() {
     const token = core.getInput('curse-wow-token', { required: true });
-    const github = core.getBooleanInput('github');
-    const curse = core.getBooleanInput('curse');
 
     const publish = new Publish();
-    await publish.run({ token, github, curse });
+    await publish.run({ token });
 }
 
 run();

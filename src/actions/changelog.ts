@@ -13,7 +13,7 @@ async function run() {
     await project.init();
 
     if (project.changelog && project.changelog.length > 0) {
-        await fs.writeFile('changelog.txt', project.changelog);
+        await fs.writeFile('changelog.txt', project.changelog || 'no changelog');
     }
 }
 

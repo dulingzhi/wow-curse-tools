@@ -46,9 +46,25 @@ export class Curse {
     }
 
     async getGameVersionIdByName(name: string) {
-        for (const item of await this.gameVersions()) {
+        const versions = await this.gameVersions();
+        for (const item of versions) {
             if (item.name === name) {
                 return item.id;
+            }
+        }
+
+        while (true) {
+            const nameNext = name.replace(/(\d+)$/g, (x) => Math.max(0, Number.parseInt(x) - 1).toString());
+            if (nameNext === name) {
+                break;
+            }
+
+            name = nameNext;
+
+            for (const item of versions) {
+                if (item.name === name) {
+                    return item.id;
+                }
             }
         }
         return 0;
@@ -144,11 +160,13 @@ export class Curse {
             });
 
             if (resp.status !== 200) {
-                throw Error('export locale failed');
+                throw Error(await resp.text());
+                // throw Error('export locale failed' );
             }
 
             return await resp.text();
-        } catch {
+        } catch (e) {
+            console.log(e);
             console.error(`export locale failed : ${url}`);
         }
         return '';

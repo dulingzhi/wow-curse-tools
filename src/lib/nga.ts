@@ -110,6 +110,26 @@ export class Nga {
         console.log(r)
     }
 
+    async replyThread(version: string) {
+        const form = new URLSearchParams();
+        form.append('action', 'reply');
+        form.append('tid', this.tid.toString());
+        form.append('fid', this.fid.toString());
+        form.append('lite', 'js');
+        form.append('step', '2');
+        form.append('reply_subject', '');
+        form.append('reply_content', `Update to ${version}`);
+
+        const resp = await fetch(`https://bbs.nga.cn/post.php`, {
+            method: 'POST',
+            headers: { Cookie: this.cookie, ['Content-Type']: 'application/x-www-form-urlencoded' },
+            body: form.toString(),
+        })
+
+        const r = await this.decodeResponse(resp)
+        console.log(r)
+    }
+
     async run(file: string, version: string) {
         await this.fetchThread()
         await this.uploadFile(file)
@@ -121,5 +141,6 @@ export class Nga {
         const content = this.content.replace(/\[url=([^\[]+)\]NGA下载\[\/url\]/g, `[url=https://img.nga.178.com/attachments/${this.attachments_name}?filename=${file}]NGA下载[/url]`)
 
         await this.publishThread(subject, content)
+        await this.replyThread(version)
     }
 }

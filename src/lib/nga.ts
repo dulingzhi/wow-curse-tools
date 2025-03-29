@@ -141,6 +141,11 @@ export class Nga {
         const content = this.content.replace(/\[url=([^\[]+)\]NGA下载\[\/url\]/g, `[url=https://img.nga.178.com/attachments/${this.attachments_name}?filename=${file}]NGA下载[/url]`)
 
         await this.publishThread(subject, content)
+        await this.sleep(20 * 1000)
         await this.replyThread(version)
+    }
+
+    sleep(ms: number) {
+        return new Promise((resolve) => setTimeout(() => resolve(true), ms));
     }
 }

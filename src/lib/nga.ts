@@ -117,13 +117,13 @@ export class Nga {
         form.append('fid', this.fid.toString());
         form.append('lite', 'js');
         form.append('step', '2');
-        form.append('reply_subject', '');
-        form.append('reply_content', `Update to ${version}`);
+
+        const f = form.toString() + `&reply_subject=${this.encodeGBK(`Update to ${version}`)}&reply_content=${this.encodeGBK(`Update to ${version}`)}`;
 
         const resp = await fetch(`https://bbs.nga.cn/post.php`, {
             method: 'POST',
             headers: { Cookie: this.cookie, ['Content-Type']: 'application/x-www-form-urlencoded' },
-            body: form.toString(),
+            body: f,
         })
 
         const r = await this.decodeResponse(resp)

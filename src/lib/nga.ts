@@ -118,7 +118,7 @@ export class Nga {
         form.append('lite', 'js');
         form.append('step', '2');
 
-        const f = form.toString() + `&reply_subject=${this.encodeGBK(`Update to ${version}`)}&reply_content=${this.encodeGBK(`Update to ${version}`)}`;
+        const f = form.toString() + `&post_content=${this.encodeGBK(`Update to ${version}`)}`;
 
         const resp = await fetch(`https://bbs.nga.cn/post.php`, {
             method: 'POST',

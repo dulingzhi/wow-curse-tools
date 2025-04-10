@@ -10,6 +10,7 @@ import * as path from 'path';
 import * as iconv from 'iconv-lite';
 import { readConfigSync } from './util';
 import decode from 'html-entities-decode';
+import { DateTime } from 'luxon'
 
 export class Nga {
     private cookie: string;
@@ -134,9 +135,7 @@ export class Nga {
         await this.fetchThread()
         await this.uploadFile(file)
 
-        const now = new Date();
-        const date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`
-
+        const date = DateTime.now().setZone('Asia/Shanghai').toFormat('yyyy-MM-dd')
         const subject = this.subject.replace(/\d+\.\d+\.\d+/g, version).replace(/\d\d\d\d\-\d{1,2}\-\d{1,2}/g, date);
         const content = this.content.replace(/\[url=([^\[]+)\]NGA下载\[\/url\]/g, `[url=https://img.nga.178.com/attachments/${this.attachments_name}?filename=${file}]NGA下载[/url]`)
 

@@ -25,6 +25,7 @@ export interface Env {
     debug: boolean;
     builds: BuildId[];
     resFilters: string[];
+    single: boolean;
 }
 
 interface BuildIdData {
@@ -87,15 +88,17 @@ class EnvManager {
             ['import', true],
         ]);
 
-        for (const buildId of env.builds) {
-            const flag = buildId === env.buildId;
+        if (!env.single) {
+            for (const buildId of env.builds) {
+                const flag = buildId === env.buildId;
 
-            this._conditions.set(BuildId[buildId], flag);
+                this._conditions.set(BuildId[buildId], flag);
 
-            const data = this._buildData.get(buildId);
-            if (data) {
-                for (const a of data.atlas) {
-                    this._conditions.set(a, flag);
+                const data = this._buildData.get(buildId);
+                if (data) {
+                    for (const a of data.atlas) {
+                        this._conditions.set(a, flag);
+                    }
                 }
             }
         }

@@ -9,7 +9,7 @@ import { gEnv } from '../env';
 import { Compiler } from './compiler';
 
 type ReplacerFunc = (a1: string, ...args: string[]) => string;
-type ReplacerItem = { r: RegExp; f: ReplacerFunc };
+type ReplacerItem = { pattern: RegExp; replacer: ReplacerFunc, validate?: () => boolean };
 type ReplacerPair = [ReplacerItem, ReplacerItem];
 
 export class LuaCompiler implements Compiler {
@@ -19,42 +19,44 @@ export class LuaCompiler implements Compiler {
     private replacers: ReplacerPair[] = [
         [
             {
-                r: /--\s*@(?<!end-|non-)(\w+)@/g,
-                f: (s, x) => (gEnv.checkCondition(x) ? s : `--[${this.getEqual(x)}[@${x}@`),
+                pattern: /--\s*@(?<!end-|non-)(\w+)@/g,
+                replacer: (s, x) => (gEnv.checkCondition(x) ? s : `--[${this.getEqual(x)}[@${x}@`),
             },
             {
-                r: /--\s*@end-(?<!non-)(\w+)@/g,
-                f: (s, x) => (gEnv.checkCondition(x) ? s : `--@end-${x}@]${this.getEqual(x)}]`),
-            },
-        ],
-        [
-            {
-                r: /--\[=*\[@non-(\w+)@/g,
-                f: (s, x) => (gEnv.checkCondition(x) ? s : `--@non-${x}@`),
-            },
-            {
-                r: /--@end-non-(\w+)@\]=*\]/g,
-                f: (s, x) => (gEnv.checkCondition(x) ? s : `--@end-non-${x}@`),
+                pattern: /--\s*@end-(?<!non-)(\w+)@/g,
+                replacer: (s, x) => (gEnv.checkCondition(x) ? s : `--@end-${x}@]${this.getEqual(x)}]`),
             },
         ],
         [
             {
-                r: /--\s*@non-(\w+)@/g,
-                f: (s, x) => (!gEnv.checkCondition(x) ? s : `--[${this.getEqual('non', x)}[@non-${x}@`),
+                pattern: /--\[=*\[@non-(\w+)@/g,
+                replacer: (s, x) => (gEnv.checkCondition(x) ? s : `--@non-${x}@`),
             },
             {
-                r: /--\s*@end-non-(\w+)@(?!\])/g,
-                f: (s, x) => (!gEnv.checkCondition(x) ? s : `--@end-non-${x}@]${this.getEqual('non', x)}]`),
+                pattern: /--@end-non-(\w+)@\]=*\]/g,
+                replacer: (s, x) => (gEnv.checkCondition(x) ? s : `--@end-non-${x}@`),
             },
         ],
         [
             {
-                r: /--\s*@build([><=!~^]+)(\d+)@/g,
-                f: (s, o, b) => (gEnv.checkBuild(o, b) ? s : `--[${this.getEqual('build', o, b)}[@build${o}${b}@`),
+                pattern: /--\s*@non-(\w+)@/g,
+                replacer: (s, x) => (!gEnv.checkCondition(x) ? s : `--[${this.getEqual('non', x)}[@non-${x}@`),
             },
             {
-                r: /--\s*@end-build([><=!~^]+)(\d+)@(?!\])/g,
-                f: (s, o, b) => (gEnv.checkBuild(o, b) ? s : `--@end-build${o}${b}@]${this.getEqual('build', o, b)}]`),
+                pattern: /--\s*@end-non-(\w+)@(?!\])/g,
+                replacer: (s, x) => (!gEnv.checkCondition(x) ? s : `--@end-non-${x}@]${this.getEqual('non', x)}]`),
+            },
+        ],
+        [
+            {
+                pattern: /--\s*@build([><=!~^]+)(\d+)@/g,
+                replacer: (s, o, b) => (gEnv.checkBuild(o, b) ? s : `--[${this.getEqual('build', o, b)}[@build${o}${b}@`),
+                validate: () => !gEnv.env.single,
+            },
+            {
+                pattern: /--\s*@end-build([><=!~^]+)(\d+)@(?!\])/g,
+                replacer: (s, o, b) => (gEnv.checkBuild(o, b) ? s : `--@end-build${o}${b}@]${this.getEqual('build', o, b)}]`),
+                validate: () => !gEnv.env.single,
             },
         ],
     ];
@@ -63,8 +65,10 @@ export class LuaCompiler implements Compiler {
         this.prepareCommentEqual(code);
 
         for (const item of this.replacers) {
-            for (const { r, f } of item) {
-                code = code.replace(r, (...args) => f(...args));
+            for (const { pattern, replacer, validate } of item) {
+                if (!validate || validate()) {
+                    code = code.replace(pattern, (...args) => replacer(...args));
+                }
             }
         }
         return code;

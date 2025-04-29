@@ -14,14 +14,22 @@ export class Package {
         const project = new Project();
         await project.init();
 
-        for (const [buildId] of project.buildEnvs) {
-            if (!builds || builds.includes(buildId)) {
-                const fileName = project.genFileName(buildId);
-                console.log(`Creating package ${fileName} ...`);
+        if (project.single) {
+            const fileName = project.genFileName();
+            console.log(`Creating package ${fileName} ...`);
+            const flusher = new Flusher(project, project.buildEnvs.keys().next().value);
+            await flusher.flush(fileName);
+            console.log(`Package ${fileName} done.`);
+        } else {
+            for (const [buildId] of project.buildEnvs) {
+                if (!builds || builds.includes(buildId)) {
+                    const fileName = project.genFileName(buildId);
+                    console.log(`Creating package ${fileName} ...`);
 
-                const flusher = new Flusher(project, buildId);
-                await flusher.flush(project.genFileName(buildId));
-                console.log(`Package ${fileName} done.`);
+                    const flusher = new Flusher(project, buildId);
+                    await flusher.flush(project.genFileName(buildId));
+                    console.log(`Package ${fileName} done.`);
+                }
             }
         }
     }

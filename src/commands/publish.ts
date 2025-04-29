@@ -31,22 +31,49 @@ export class Publish {
         }
 
         const cli = new Curse(project.curseId, opts.token);
-        for (const [buildId, env] of project.buildEnvs) {
-            if (!opts.builds || opts.builds.includes(buildId)) {
-                const wowVersionId = await cli.getGameVersionIdByName(env.wowVersion);
-                console.log('wow version id:', wowVersionId);
 
-                const fileName = project.genFileName(buildId);
-                if (await fs.exists(fileName)) {
-                    console.log(`Creating package ${fileName} ...`);
-                    const flusher = new Flusher(project, buildId);
-                    await flusher.flush(fileName);
+        if (project.single) {
+            const wowVersions: number[] = [];
+
+            for (const [buildId, env] of project.buildEnvs) {
+                if (!opts.builds || opts.builds.includes(buildId)) {
+                    const wowVersionId = await cli.getGameVersionIdByName(env.wowVersion);
+                    console.log('wow version id:', wowVersionId);
+
+                    wowVersions.push(wowVersionId);
                 }
+            }
 
-                console.log(`Uploading package ${fileName} ...`);
-                await cli.uploadFile(fileName, project.version, wowVersionId, project.changelog);
+            const fileName = project.genFileName();
+            if (await fs.exists(fileName)) {
+                console.log(`Creating package ${fileName} ...`);
+                const flusher = new Flusher(project, project.buildEnvs.keys().next().value);
+                await flusher.flush(fileName);
+            }
 
-                console.log(`Publish package ${fileName} done`);
+            console.log(`Uploading package ${fileName} ...`);
+            await cli.uploadFile(fileName, project.version, wowVersions, project.changelog);
+
+            console.log(`Publish package ${fileName} done`);
+
+        } else {
+            for (const [buildId, env] of project.buildEnvs) {
+                if (!opts.builds || opts.builds.includes(buildId)) {
+                    const wowVersionId = await cli.getGameVersionIdByName(env.wowVersion);
+                    console.log('wow version id:', wowVersionId);
+
+                    const fileName = project.genFileName(buildId);
+                    if (await fs.exists(fileName)) {
+                        console.log(`Creating package ${fileName} ...`);
+                        const flusher = new Flusher(project, buildId);
+                        await flusher.flush(fileName);
+                    }
+
+                    console.log(`Uploading package ${fileName} ...`);
+                    await cli.uploadFile(fileName, project.version, [wowVersionId], project.changelog);
+
+                    console.log(`Publish package ${fileName} done`);
+                }
             }
         }
     }

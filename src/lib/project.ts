@@ -38,6 +38,7 @@ interface WowPackage {
 
     addons?: { [name: string]: string };
     nga_id?: { [name: string]: number };
+    single?: boolean;
 }
 
 export class Project implements Addon {
@@ -52,6 +53,7 @@ export class Project implements Addon {
     private _localeIgnores: string[] = [];
     private _noCompiles = new Set<string>;
     private _ngaId = new Map<BuildId, number>();
+    private _single = false;
 
     constructor(readonly debug = false) { }
 
@@ -85,6 +87,10 @@ export class Project implements Addon {
 
     get localeIgnores() {
         return this._localeIgnores;
+    }
+
+    get single() {
+        return this._single;
     }
 
     getNgaId(buildId: BuildId) {
@@ -161,6 +167,7 @@ export class Project implements Addon {
         this._folder = path.resolve('./');
         this._name = p.name;
         this._curseId = p.curse_id || 0;
+        this._single = !!p.single;
 
         if (!p.old_version_style) {
             this._version = pkg.version;
@@ -183,6 +190,8 @@ export class Project implements Addon {
             }
         }
 
+        const interfaces = [];
+
         if (p.builds) {
             const builds = Object.keys(p.builds)
                 .map((x) => gEnv.toBuildId(x))
@@ -193,6 +202,8 @@ export class Project implements Addon {
                 if (buildId) {
                     const buildInfo = typeof info === 'string' ? { interface: info } : info;
 
+                    interfaces.push(buildInfo.interface);
+
                     this._buildEnvs.set(buildId, {
                         buildId,
                         buildInfo,
@@ -201,6 +212,7 @@ export class Project implements Addon {
                         debug: this.debug,
                         wowVersion: toWowVersion(buildInfo.interface),
                         resFilters: this._resFilters,
+                        single: this._single,
                     });
                 }
             }
@@ -210,6 +222,7 @@ export class Project implements Addon {
             const toc = await readFile(`./${pkg.wow.name}.toc`);
             const m = toc.match(/##\s*Interface\s*:\s*(\d+)/);
             if (m) {
+                interfaces.push(m[1]);
                 this._buildEnvs.set(BuildId.Unknown, {
                     buildId: BuildId.Unknown,
                     buildInfo: { interface: m[1] },
@@ -218,7 +231,16 @@ export class Project implements Addon {
                     wowVersion: toWowVersion(m[1]),
                     builds: [],
                     resFilters: this._resFilters,
+                    single: this._single,
                 });
+            }
+        }
+
+        if (this._single) {
+            const siggleInterface = interfaces.join(', ');
+
+            for (const [_, env] of this._buildEnvs) {
+                env.buildInfo.interface = siggleInterface;
             }
         }
 

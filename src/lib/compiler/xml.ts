@@ -26,6 +26,8 @@ export class XmlCompiler implements Compiler {
             if (attr) {
                 const m = attr.name.match(/^build:(.+)/);
                 if (m && attr.nodeValue) {
+                    console.warn(`cannot use build attr in single mode`);
+
                     const name = m[1];
                     const reg = /(non-)?([^()\- ]+)\(([^() ]+)\)/g;
 

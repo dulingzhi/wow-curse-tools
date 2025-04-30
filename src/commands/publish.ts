@@ -36,7 +36,7 @@ export class Publish {
             if (!opts.builds || opts.builds.includes(buildId)) {
                 const curseWowVersionIds = [];
 
-                for (const wowVersion of env.wowVersions) {
+                for (const { wowVersion } of env.buildInfos.values()) {
                     const curseWowVersionId = await cli.getGameVersionIdByName(wowVersion);
                     if (curseWowVersionId) {
                         curseWowVersionIds.push(curseWowVersionId);

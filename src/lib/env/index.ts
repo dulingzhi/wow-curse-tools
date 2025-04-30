@@ -7,6 +7,7 @@
 
 export interface BuildInfo {
     interface: string;
+    wowVersion: string;
 }
 
 export enum BuildId {
@@ -20,13 +21,12 @@ export enum BuildId {
 
 export interface Env {
     buildId: BuildId;
-    buildInfo: BuildInfo;
     version: string;
-    wowVersions: string[];
     debug: boolean;
     builds: BuildId[];
     resFilters: string[];
     single: boolean;
+    buildInfos: Map<BuildId, BuildInfo>;
 }
 
 interface BuildIdData {
@@ -160,7 +160,7 @@ class EnvManager {
             ver *= 10000;
         }
 
-        const version = Number.parseInt(this._env.buildInfo.interface);
+        const version = Number.parseInt(this._env.buildInfos.get(this._env.buildId)!.interface);
 
         switch (op) {
             case '>':

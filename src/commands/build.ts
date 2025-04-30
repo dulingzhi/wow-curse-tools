@@ -151,7 +151,7 @@ export class Build {
     private async compileFile(file: File) {
         let content;
         if (!this.project.isNoCompile(file.path)) {
-            content = await gCompilerManager.compile(file.path);
+            content = await gCompilerManager.compile(file.path, file.buildId);
         }
 
         const targetFile = this.resolveFilePath(file);

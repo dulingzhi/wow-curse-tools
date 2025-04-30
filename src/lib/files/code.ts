@@ -19,7 +19,7 @@ export class CodeFilesFinder {
     constructor(private fetchRemote = false) {}
 
     private parseFileName(name: string) {
-        return name.replace(/\\+/g, '/');
+        return name.trim().replace(/\\+/g, '/').replace(/\s+\[.+\]$/g, '');
     }
 
     private async parseToc(filePath: string) {

@@ -204,24 +204,26 @@ export class Project implements Addon {
                 .filter((x) => x);
 
             if (this.single) {
-                const interfaces = [];
+                const buildInfos = new Map<BuildId, BuildInfo>();
 
                 for (const [buildKey, info] of Object.entries(p.builds)) {
                     const buildId = gEnv.toBuildId(buildKey);
                     if (buildId) {
                         const projectInterface = typeof info === 'string' ? info : info.interface;
 
-                        interfaces.push(projectInterface);
+                        buildInfos.set(buildId, {
+                            interface: projectInterface,
+                            wowVersion: toWowVersion(projectInterface),
+                        });
                     }
                 }
 
                 this._buildEnvs.set(BuildId.Single, {
                     buildId: BuildId.Single,
-                    buildInfo: { interface: interfaces.join(',') },
+                    buildInfos,
                     version: this._version,
                     debug: this.debug,
                     builds,
-                    wowVersions: interfaces.map((x) => toWowVersion(x)),
                     resFilters: this._resFilters,
                     single: true,
                 });
@@ -234,11 +236,10 @@ export class Project implements Addon {
 
                         this._buildEnvs.set(buildId, {
                             buildId,
-                            buildInfo,
+                            buildInfos: new Map<BuildId, BuildInfo>([[buildId, { interface: buildInfo.interface, wowVersion: toWowVersion(buildInfo.interface) }]]),
                             builds,
                             version: this._version,
                             debug: this.debug,
-                            wowVersions: [toWowVersion(buildInfo.interface)],
                             resFilters: this._resFilters,
                             single: false,
                         });
@@ -253,10 +254,9 @@ export class Project implements Addon {
             if (m) {
                 this._buildEnvs.set(BuildId.Single, {
                     buildId: BuildId.Single,
-                    buildInfo: { interface: m[1] },
+                    buildInfos: new Map<BuildId, BuildInfo>([[BuildId.Single, { interface: m[1], wowVersion: toWowVersion(m[1]) }]]),
                     version: this._version,
                     debug: this.debug,
-                    wowVersions: [toWowVersion(m[1])],
                     builds: [],
                     resFilters: this._resFilters,
                     single: true,

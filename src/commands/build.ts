@@ -84,7 +84,7 @@ export class Build {
     async run(output: string | undefined, buildId: BuildId) {
         await this.project.init();
 
-        const env = this.project.buildEnvs.get(buildId);
+        const env = this.project.getEnv(buildId);
         if (!env) {
             throw Error('error build');
         }

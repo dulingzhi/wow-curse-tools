@@ -11,6 +11,7 @@ export interface BuildInfo {
 
 export enum BuildId {
     Unknown = 0,
+    Single,
     Vanilla,
     Wrath,
     Cata,
@@ -21,7 +22,7 @@ export interface Env {
     buildId: BuildId;
     buildInfo: BuildInfo;
     version: string;
-    wowVersion: string;
+    wowVersions: string[];
     debug: boolean;
     builds: BuildId[];
     resFilters: string[];
@@ -68,6 +69,7 @@ const BUILD_DATA = {
 class EnvManager {
     private _env: Env;
     private _conditions?: Map<string, boolean>;
+    private _invalid = new Map<string, boolean>();
     private _buildData: Map<BuildId, BuildIdData> = new Map(
         Object.entries(BUILD_DATA).map(([k, v]) => [BuildId[k as keyof typeof BuildId], v])
     );
@@ -88,15 +90,21 @@ class EnvManager {
             ['import', true],
         ]);
 
-        if (!env.single) {
-            for (const buildId of env.builds) {
-                const flag = buildId === env.buildId;
+        for (const buildId of env.builds) {
+            const flag = buildId === env.buildId;
 
+            if (env.single) {
+                this._invalid.set(BuildId[buildId], true);
+            } else {
                 this._conditions.set(BuildId[buildId], flag);
+            }
 
-                const data = this._buildData.get(buildId);
-                if (data) {
-                    for (const a of data.atlas) {
+            const data = this._buildData.get(buildId);
+            if (data) {
+                for (const a of data.atlas) {
+                    if (env.single) {
+                        this._invalid.set(a, true);
+                    } else {
                         this._conditions.set(a, flag);
                     }
                 }
@@ -131,10 +139,18 @@ class EnvManager {
     }
 
     checkCondition(condition: string) {
+        if (this._invalid.has(condition)) {
+            console.warn(`Condition ${condition} in single mode is invalid.`);
+            return true;
+        }
         return this._conditions?.has(condition) && this._conditions.get(condition);
     }
 
     checkBuild(op: string, v: string) {
+        if (this.env.single) {
+            console.warn(`Condition ${op}${v} in single mode is invalid.`);
+            return true;
+        }
         let ver = Number.parseInt(v);
         if (!ver) {
             throw Error(`unknown version: ${v}`);

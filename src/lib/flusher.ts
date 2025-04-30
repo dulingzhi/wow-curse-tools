@@ -18,7 +18,7 @@ export class Flusher {
     private zipFile = new ZipFile();
 
     constructor(private project: Project, buildId: BuildId) {
-        const env = project.buildEnvs.get(buildId);
+        const env = project.getEnv(buildId);
         if (!env) {
             throw Error('not found env');
         }

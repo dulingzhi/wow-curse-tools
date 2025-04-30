@@ -93,6 +93,13 @@ export class Project implements Addon {
         return this._single;
     }
 
+    getEnv(buildId: BuildId) {
+        if (this._single) {
+            return this._buildEnvs.get(BuildId.Single);
+        }
+        return this._buildEnvs.get(buildId);
+    }
+
     getNgaId(buildId: BuildId) {
         return this._ngaId.get(buildId);
     }
@@ -190,30 +197,52 @@ export class Project implements Addon {
             }
         }
 
-        const interfaces = [];
 
         if (p.builds) {
             const builds = Object.keys(p.builds)
                 .map((x) => gEnv.toBuildId(x))
                 .filter((x) => x);
 
-            for (const [buildKey, info] of Object.entries(p.builds)) {
-                const buildId = gEnv.toBuildId(buildKey);
-                if (buildId) {
-                    const buildInfo = typeof info === 'string' ? { interface: info } : info;
+            if (this.single) {
+                const interfaces = [];
 
-                    interfaces.push(buildInfo.interface);
+                for (const [buildKey, info] of Object.entries(p.builds)) {
+                    const buildId = gEnv.toBuildId(buildKey);
+                    if (buildId) {
+                        const projectInterface = typeof info === 'string' ? info : info.interface;
 
-                    this._buildEnvs.set(buildId, {
-                        buildId,
-                        buildInfo,
-                        builds,
-                        version: this._version,
-                        debug: this.debug,
-                        wowVersion: toWowVersion(buildInfo.interface),
-                        resFilters: this._resFilters,
-                        single: this._single,
-                    });
+                        interfaces.push(projectInterface);
+                    }
+                }
+
+                this._buildEnvs.set(BuildId.Single, {
+                    buildId: BuildId.Single,
+                    buildInfo: { interface: interfaces.join(',') },
+                    version: this._version,
+                    debug: this.debug,
+                    builds,
+                    wowVersions: interfaces.map((x) => toWowVersion(x)),
+                    resFilters: this._resFilters,
+                    single: true,
+                });
+
+            } else {
+                for (const [buildKey, info] of Object.entries(p.builds)) {
+                    const buildId = gEnv.toBuildId(buildKey);
+                    if (buildId) {
+                        const buildInfo = typeof info === 'string' ? { interface: info } : info;
+
+                        this._buildEnvs.set(buildId, {
+                            buildId,
+                            buildInfo,
+                            builds,
+                            version: this._version,
+                            debug: this.debug,
+                            wowVersions: [toWowVersion(buildInfo.interface)],
+                            resFilters: this._resFilters,
+                            single: false,
+                        });
+                    }
                 }
             }
         }
@@ -222,25 +251,18 @@ export class Project implements Addon {
             const toc = await readFile(`./${pkg.wow.name}.toc`);
             const m = toc.match(/##\s*Interface\s*:\s*(\d+)/);
             if (m) {
-                interfaces.push(m[1]);
-                this._buildEnvs.set(BuildId.Unknown, {
-                    buildId: BuildId.Unknown,
+                this._buildEnvs.set(BuildId.Single, {
+                    buildId: BuildId.Single,
                     buildInfo: { interface: m[1] },
                     version: this._version,
                     debug: this.debug,
-                    wowVersion: toWowVersion(m[1]),
+                    wowVersions: [toWowVersion(m[1])],
                     builds: [],
                     resFilters: this._resFilters,
-                    single: this._single,
+                    single: true,
                 });
-            }
-        }
 
-        if (this._single) {
-            const siggleInterface = interfaces.join(', ');
-
-            for (const [_, env] of this._buildEnvs) {
-                env.buildInfo.interface = siggleInterface;
+                this._single = true;
             }
         }
 

@@ -22,6 +22,7 @@ const USER_AGENT =
 export class Curse {
     private base = 'https://wow.curseforge.com/api';
     private token: string;
+    private _gameVersions: GameVersion[];
 
     constructor(private curseId: number, token?: string) {
         if (!token) {
@@ -34,15 +35,18 @@ export class Curse {
     }
 
     async gameVersions() {
-        const url = `${this.base}/game/versions`;
+        if (!this._gameVersions) {
+            const url = `${this.base}/game/versions`;
 
-        const resp = await fetch(url, {
-            headers: {
-                'X-Api-Token': this.token,
-                'user-agent': USER_AGENT,
-            },
-        });
-        return (await resp.json()) as GameVersion[];
+            const resp = await fetch(url, {
+                headers: {
+                    'X-Api-Token': this.token,
+                    'user-agent': USER_AGENT,
+                },
+            });
+            this._gameVersions = (await resp.json()) as GameVersion[];
+        }
+        return this._gameVersions;
     }
 
     async getGameVersionIdByName(name: string) {

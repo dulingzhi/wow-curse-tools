@@ -51,12 +51,10 @@ export class LuaCompiler implements Compiler {
             {
                 pattern: /--\s*@build([><=!~^]+)(\d+)@/g,
                 replacer: (s, o, b) => (gEnv.checkBuild(o, b) ? s : `--[${this.getEqual('build', o, b)}[@build${o}${b}@`),
-                validate: () => !gEnv.env.single,
             },
             {
                 pattern: /--\s*@end-build([><=!~^]+)(\d+)@(?!\])/g,
                 replacer: (s, o, b) => (gEnv.checkBuild(o, b) ? s : `--@end-build${o}${b}@]${this.getEqual('build', o, b)}]`),
-                validate: () => !gEnv.env.single,
             },
         ],
     ];

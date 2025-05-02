@@ -93,6 +93,10 @@ export class Project implements Addon {
         return this._single;
     }
 
+    get ngaBuildIds() {
+        return [...this._ngaId.keys()];
+    }
+
     getEnv(buildId: BuildId) {
         if (this._single) {
             return this._buildEnvs.get(BuildId.Single);

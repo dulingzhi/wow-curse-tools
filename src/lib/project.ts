@@ -109,7 +109,7 @@ export class Project implements Addon {
     }
 
     genFileName(buildId?: BuildId) {
-        if (buildId) {
+        if (buildId && !this._single) {
             const suffix = gEnv.getBuildSuffix(buildId);
             if (suffix && suffix.length > 0) {
                 return `${this.name}-${suffix}-${this.version}.zip`;

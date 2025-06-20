@@ -143,7 +143,8 @@ export class Nga {
         ctx = ctx.replace(/\[url=([^\[]+)\]NGA下载\[\/url\]/g, `[url=https://img.nga.178.com/attachments/${this.attachments_name}?filename=${file}]NGA下载[/url]`);
 
         if (await fs.pathExists(changelogFile)) {
-            ctx = ctx.replace(/\[collapse=changlog\](.+)\[collapse\]/g, convertChangelogToBBCode(await fs.readFile(changelogFile, { encoding: 'utf-8' })));
+            const bbcode = convertChangelogToBBCode(await fs.readFile(changelogFile, { encoding: 'utf-8' }))
+            ctx = ctx.replace(/\[collapse=changlog\](.+)\[\/collapse\]/g, `[collapse=changlog]${bbcode}[/collapse]`);
         }
 
         await this.publishThread(subject, ctx)

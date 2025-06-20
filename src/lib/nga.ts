@@ -144,7 +144,7 @@ export class Nga {
 
         if (await fs.pathExists(changelogFile)) {
             const bbcode = convertChangelogToBBCode(await fs.readFile(changelogFile, { encoding: 'utf-8' }))
-            ctx = ctx.replace(/\[collapse=changlog\](.+)\[\/collapse\]/gms, `[collapse=changlog]${bbcode}[/collapse]`);
+            ctx = ctx.replace(/\[collapse\=changelog\].+\[\/collapse\]/gms, `[collapse=changelog]${bbcode}[/collapse]`);
         }
 
         await this.publishThread(subject, ctx)

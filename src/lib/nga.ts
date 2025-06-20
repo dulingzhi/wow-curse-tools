@@ -135,13 +135,18 @@ export class Nga {
         await this.fetchThread()
         await this.uploadFile(file)
 
+        const changelogFile = path.resolve('CHANGELOG.md');
         const date = DateTime.now().setZone('Asia/Shanghai').toFormat('yyyy-MM-dd')
         const subject = this.subject.replace(/\d+\.\d+\.\d+/g, version).replace(/\d\d\d\d\-\d{1,2}\-\d{1,2}/g, date);
-        const content = this.content
-            .replace(/\[url=([^\[]+)\]NGA下载\[\/url\]/g, `[url=https://img.nga.178.com/attachments/${this.attachments_name}?filename=${file}]NGA下载[/url]`)
-            .replace(/\[collapse=changlog\](.+)\[collapse\]/g, convertChangelogToBBCode(await fs.readFile(file, { encoding: 'utf-8' })));
 
-        await this.publishThread(subject, content)
+        let ctx = this.content;
+        ctx = ctx.replace(/\[url=([^\[]+)\]NGA下载\[\/url\]/g, `[url=https://img.nga.178.com/attachments/${this.attachments_name}?filename=${file}]NGA下载[/url]`);
+
+        if (await fs.pathExists(changelogFile)) {
+            ctx = ctx.replace(/\[collapse=changlog\](.+)\[collapse\]/g, convertChangelogToBBCode(await fs.readFile(changelogFile, { encoding: 'utf-8' })));
+        }
+
+        await this.publishThread(subject, ctx)
         await this.sleep(20 * 1000)
         await this.replyThread(version)
     }

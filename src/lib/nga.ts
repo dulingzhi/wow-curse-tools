@@ -8,7 +8,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as iconv from 'iconv-lite';
-import { readConfigSync } from './util';
+import { convertChangelogToBBCode, readConfigSync } from './util';
 import decode from 'html-entities-decode';
 import { DateTime } from 'luxon'
 
@@ -137,7 +137,9 @@ export class Nga {
 
         const date = DateTime.now().setZone('Asia/Shanghai').toFormat('yyyy-MM-dd')
         const subject = this.subject.replace(/\d+\.\d+\.\d+/g, version).replace(/\d\d\d\d\-\d{1,2}\-\d{1,2}/g, date);
-        const content = this.content.replace(/\[url=([^\[]+)\]NGA下载\[\/url\]/g, `[url=https://img.nga.178.com/attachments/${this.attachments_name}?filename=${file}]NGA下载[/url]`)
+        const content = this.content
+            .replace(/\[url=([^\[]+)\]NGA下载\[\/url\]/g, `[url=https://img.nga.178.com/attachments/${this.attachments_name}?filename=${file}]NGA下载[/url]`)
+            .replace(/\[collapse=changlog\](.+)\[collapse\]/g, convertChangelogToBBCode(await fs.readFile(file, { encoding: 'utf-8' })));
 
         await this.publishThread(subject, content)
         await this.sleep(20 * 1000)

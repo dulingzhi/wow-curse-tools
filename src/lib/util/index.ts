@@ -116,3 +116,59 @@ export function readConfigSync(...paths: string[]) {
         return process.env[key];
     }
 }
+
+interface ChangeLogNode {
+    version: string;
+    date: string;
+    content: string[];
+}
+
+export function convertChangelogToBBCode(changelog: string) {
+    const changeLog: ChangeLogNode[] = [];
+    let currentNode: ChangeLogNode | undefined;
+    let currentType: string | undefined;
+
+    const locale = new Map<string, string>([['Bug Fixes', '修复'], ['Features', '新增']]);
+
+    for (const [line] of changelog.matchAll(/[^\r\n]+/g)) {
+        {
+            const m = line.match(/^## \[(\d+\.\d+\.\d+)\].+\(([\d\-]+)\)/);
+            if (m) {
+                currentNode = {
+                    version: m[1],
+                    date: m[2],
+                    content: []
+                }
+                changeLog.push(currentNode);
+                continue;
+            }
+        }
+
+        {
+            const m = line.match(/^### (.+)/);
+            if (m && currentNode) {
+                currentType = m[1];
+                continue;
+            }
+        }
+
+        {
+            const m = line.match(/^\* (.+) \(\[/);
+            if (m && currentNode && currentType) {
+                currentNode.content.push(`- ${locale.get(currentType) || currentType}: ${m[1]}`);
+                continue;
+            }
+        }
+    }
+
+    const sb: string[] = [];
+
+    for (const node of changeLog) {
+        sb.push(`[h]${node.version} (${node.date})[/h] `);
+        for (const content of node.content) {
+            sb.push(`${content}`);
+        }
+
+    }
+    return sb.join('\n');
+}

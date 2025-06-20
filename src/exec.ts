@@ -18,6 +18,7 @@ import { Locale } from './commands/locale';
 import { Update } from './commands/update';
 import { Global } from './commands/global';
 import { NgaPublish } from './commands/nga';
+import { ChangeLog } from './commands/changelog';
 
 class App {
     optBuilds(args: string[]) {
@@ -117,6 +118,12 @@ class App {
             .description('scan _G')
             .action(async (opts) => {
                 await new Global().run(opts.output);
+            });
+
+        program.command('changelog')
+            .description('generate changelog')
+            .action(async () => {
+                await new ChangeLog().run();
             });
 
         {

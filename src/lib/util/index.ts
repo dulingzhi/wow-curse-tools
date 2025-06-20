@@ -128,7 +128,7 @@ export function convertChangelogToBBCode(changelog: string) {
     let currentNode: ChangeLogNode | undefined;
     let currentType: string | undefined;
 
-    const locale = new Map<string, string>([['Bug Fixes', '修复'], ['Features', '新增']]);
+    const locale = new Map<string, string>([['Bug Fixes', '修复'], ['Features', '功能']]);
 
     for (const [line] of changelog.matchAll(/[^\r\n]+/g)) {
         {

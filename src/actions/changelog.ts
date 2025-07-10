@@ -11,10 +11,7 @@ import { Project } from "../lib/project";
 async function run() {
     const project = new Project();
     await project.init();
-
-    if (project.changelog && project.changelog.length > 0) {
-        await fs.writeFile('changelog.txt', project.changelog || 'no changelog');
-    }
+    await fs.writeFile('changelog.txt', project.changelog || 'no changelog');
 }
 
 run();
